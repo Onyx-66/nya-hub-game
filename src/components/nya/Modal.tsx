@@ -1,19 +1,41 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
+
+type ModalSize = "sm" | "md" | "lg" | "full";
 
 interface ModalProps {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
   title?: string;
+  size?: ModalSize;
 }
+
+const sizeClasses: Record<ModalSize, string> = {
+  sm: "max-w-xs",
+  md: "max-w-md",
+  lg: "max-w-lg",
+  full: "max-w-2xl",
+};
 
 /**
  * Generic animated modal with backdrop blur.
  * Slides up from bottom on mobile, centers on larger screens.
+ * Closes on Escape key, backdrop click, or close button.
  */
-export default function Modal({ open, onClose, children, title }: ModalProps) {
+export default function Modal({ open, onClose, children, title, size = "md" }: ModalProps) {
+  // Escape key to close
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, onClose]);
+
   return (
     <AnimatePresence>
       {open && (
@@ -30,7 +52,7 @@ export default function Modal({ open, onClose, children, title }: ModalProps) {
             exit={{ opacity: 0, y: 60, scale: 0.96 }}
             transition={{ type: "spring", damping: 26, stiffness: 320 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl p-6 border border-border/50 shadow-2xl"
+            className={`relative w-full ${sizeClasses[size]} bg-card rounded-t-3xl sm:rounded-3xl p-6 border border-border/50 shadow-2xl`}
           >
             {/* grab handle (mobile) */}
             <div className="sm:hidden absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-muted-foreground/30" />

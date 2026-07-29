@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import NyaLayout from "@/components/nya/NyaLayout";
-import GameCard from "@/components/nya/GameCard";
+import GameGrid from "@/components/nya/GameGrid";
+import FeaturedBanner from "@/components/nya/FeaturedBanner";
 import { usePlayerStore } from "@/store/usePlayerStore";
 import { useGameStore } from "@/store/useGameStore";
 import { SNAKE_GAME_META } from "@/games/snake/game.config";
@@ -108,6 +109,8 @@ export default function HubScreen() {
   const { name } = usePlayerStore();
   const highScores = useGameStore((s) => s.highScores);
 
+  const featuredGames = games.filter((g) => g.isFeatured && !g.isComingSoon);
+
   return (
     <NyaLayout showBack={false} title="Nya Hub 🐾">
       <div className="space-y-5">
@@ -123,6 +126,14 @@ export default function HubScreen() {
           </h2>
         </motion.div>
 
+        {/* featured banner carousel */}
+        {featuredGames.length > 0 && (
+          <FeaturedBanner
+            games={featuredGames}
+            onPlay={(g) => navigate(`/game/${g.slug}`)}
+          />
+        )}
+
         {/* game grid */}
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -133,17 +144,11 @@ export default function HubScreen() {
               {games.length} games
             </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {games.map((game, i) => (
-              <GameCard
-                key={game.id}
-                game={game}
-                index={i}
-                highScore={highScores[game.slug] ?? 0}
-                onPlay={(g) => navigate(`/game/${g.slug}`)}
-              />
-            ))}
-          </div>
+          <GameGrid
+            games={games}
+            highScores={highScores}
+            onPlay={(g) => navigate(`/game/${g.slug}`)}
+          />
         </div>
       </div>
     </NyaLayout>
