@@ -520,30 +520,28 @@ export default function SnakeGame() {
 
           {/* Idle overlay */}
           {gameState === "idle" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm gap-3 rounded-2xl">
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Droplet className="w-12 h-12 text-primary" />
-              </motion.div>
-              <button
-                onClick={startGame}
-                className="px-7 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm active:scale-95 transition-transform"
-              >
-                Start Game
-              </button>
-              {highScore > 0 && (
-                <div className="flex items-center gap-1.5 text-xs text-white/60">
-                  <Trophy className="w-3 h-3 text-gold" /> Best: {highScore}
-                </div>
-              )}
-              <button
-                onClick={openSettings}
-                className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1"
-              >
-                <Settings className="w-3 h-3" /> Controls
-              </button>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm gap-4 rounded-2xl px-4">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-[10px] text-white/50 uppercase tracking-widest">Best Score</span>
+                <span className="flex items-center gap-2">
+                  <Trophy className="w-6 h-6 text-gold" />
+                  <span className="font-heading font-bold text-5xl text-gold leading-none">{highScore}</span>
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={startGame}
+                  className="px-7 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm active:scale-95 transition-transform"
+                >
+                  Start Game
+                </button>
+                <button
+                  onClick={openSettings}
+                  className="flex items-center gap-1.5 px-7 py-2.5 rounded-xl bg-secondary text-secondary-foreground font-heading font-bold text-sm active:scale-95 transition-transform"
+                >
+                  <Settings className="w-4 h-4" /> Controls
+                </button>
+              </div>
             </div>
           )}
 
