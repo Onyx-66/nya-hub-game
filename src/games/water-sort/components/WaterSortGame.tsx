@@ -34,6 +34,7 @@ export default function WaterSortGame() {
   const navigate = useNavigate();
   const { onGameStart, onGameEnd, highScore } = useGameEconomy(GAME_ID);
   const addPaws = useEconomyStore((s) => s.addPaws);
+  const addGems = useEconomyStore((s) => s.addGems);
 
   // Init / restart on level change
   useEffect(() => {
@@ -43,9 +44,12 @@ export default function WaterSortGame() {
       const par = engine.getPar();
       const actualMoves = engine.getMoves();
       const score = level * 1000 - actualMoves * 10;
-      const stars = actualMoves < par ? 3 : actualMoves < par * 1.5 ? 2 : 1;
-      const pawsReward = 10 + (actualMoves < par ? (par - actualMoves) * 2 : 0);
+      const stars = actualMoves < par ? 3 : actualMoves < par * 2 ? 2 : 1;
+      const pawsReward = 10 + (stars === 3 ? 5 : 0);
       addPaws(pawsReward, `Water Sort level ${level} reward`);
+      if (stars === 3) {
+        addGems(1, `Water Sort 3-star bonus`);
+      }
       onGameEnd(score, level, stars);
       setIsNewHighScore(score > highScore);
       setGameState("won");

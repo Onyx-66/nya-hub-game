@@ -56,26 +56,50 @@ export class WaterSortEngine {
   }
 
   private getColorCount(level: number): number {
-    if (level <= 1) return 3;
-    if (level <= 3) return 4;
+    if (level <= 2) return 3;
+    if (level <= 4) return 4;
     if (level <= 6) return 5;
     return 6;
   }
 
   private generatePuzzle(): void {
     const colors = COLORS.slice(0, this.colorCount);
-    const allUnits: Color[] = [];
-    for (const color of colors) {
-      for (let i = 0; i < this.tubeCapacity; i++) {
-        allUnits.push(color);
+    // Start from solved state: each tube filled with one color
+    const solved: Tube[] = colors.map((c) => [c, c, c, c]);
+    this.tubes = [...solved.map((t) => [...t]), [], []];
+    // Scramble with 20+ random valid pours (reversing last pour avoided)
+    const scrambleCount = 20 + this.colorCount * 4;
+    let lastFrom = -1;
+    let lastTo = -1;
+    for (let i = 0; i < scrambleCount; i++) {
+      const validPours: [number, number][] = [];
+      for (let from = 0; from < this.tubes.length; from++) {
+        for (let to = 0; to < this.tubes.length; to++) {
+          if (from === to) continue;
+          if (from === lastTo && to === lastFrom) continue;
+          if (this.canPour(from, to)) validPours.push([from, to]);
+        }
       }
+      if (validPours.length === 0) break;
+      const [from, to] = validPours[Math.floor(Math.random() * validPours.length)];
+      this.transferLiquid(from, to);
+      lastFrom = from;
+      lastTo = to;
     }
-    const shuffled = shuffle(allUnits);
-    const colorTubes: Tube[] = [];
-    for (let i = 0; i < this.colorCount; i++) {
-      colorTubes.push(shuffled.slice(i * this.tubeCapacity, (i + 1) * this.tubeCapacity));
+    this.moves = 0;
+  }
+
+  private transferLiquid(fromIndex: number, toIndex: number): void {
+    const from = this.tubes[fromIndex];
+    const to = this.tubes[toIndex];
+    const topColor = from[from.length - 1];
+    while (
+      from.length > 0 &&
+      to.length < this.tubeCapacity &&
+      from[from.length - 1] === topColor
+    ) {
+      to.push(from.pop()!);
     }
-    this.tubes = [...colorTubes, [], []];
   }
 
   private cloneTubes(): Tube[] {
@@ -97,16 +121,7 @@ export class WaterSortEngine {
     if (!this.canPour(fromIndex, toIndex)) {
       return { success: false, fromTube: fromIndex, toTube: toIndex, message: "Invalid pour" };
     }
-    const from = this.tubes[fromIndex];
-    const to = this.tubes[toIndex];
-    const topColor = from[from.length - 1];
-    while (
-      from.length > 0 &&
-      to.length < this.tubeCapacity &&
-      from[from.length - 1] === topColor
-    ) {
-      to.push(from.pop()!);
-    }
+    this.transferLiquid(fromIndex, toIndex);
     this.moves++;
     this.onMove?.(this.moves);
     if (this.isComplete()) {

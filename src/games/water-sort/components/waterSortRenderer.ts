@@ -19,8 +19,8 @@ const GLASS_FILL = "rgba(96, 165, 250, 0.06)";
 const GLASS_BORDER = "rgba(255, 255, 255, 0.12)";
 
 export function createConfig(canvasWidth: number): RendererConfig {
-  const tubeWidth = 44;
-  const tubeHeight = 136;
+  const tubeWidth = 48;
+  const tubeHeight = 160;
   const tubeSpacing = 12;
   const rowSpacing = 20;
   const tubesPerRow = 4;

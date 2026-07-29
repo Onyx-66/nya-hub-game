@@ -32,30 +32,39 @@ export default function MeowdokuGame() {
   const [hintCell, setHintCell] = useState<CellPosition | null>(null);
   const [, forceRender] = useState(0);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
 
   const navigate = useNavigate();
   const { onGameStart, onGameEnd, highScore } = useGameEconomy(GAME_ID);
   const addPaws = useEconomyStore((s) => s.addPaws);
   const spendPaws = useEconomyStore((s) => s.spendPaws);
+  const addGems = useEconomyStore((s) => s.addGems);
 
   const triggerRender = useCallback(() => forceRender((v) => v + 1), []);
 
   // Init engine on difficulty change
   useEffect(() => {
+    if (!gameStarted) return;
     const engine = new MeowdokuEngine(difficulty);
     engine.onWin = () => {
       const baseScore = DIFFICULTY_BASE_SCORE[difficulty];
-      const score = baseScore - mistakes * 100 - timer * 2;
-      const stars = mistakes === 0 ? 3 : mistakes === 1 ? 2 : 1;
-      addPaws(DIFFICULTY_REWARDS[difficulty], `Meowdoku ${difficulty} reward`);
+      const elapsedMistakes = engine.mistakes;
+      const elapsed = engine.getElapsedTime();
+      const score = baseScore - elapsedMistakes * 100 - elapsed * 2;
+      const stars = elapsedMistakes === 0 ? 3 : elapsedMistakes === 1 ? 2 : 1;
+      const pawsReward = DIFFICULTY_REWARDS[difficulty] + (elapsedMistakes === 0 ? 25 : 0);
+      addPaws(pawsReward, `Meowdoku ${difficulty} reward`);
+      if (elapsedMistakes === 0) {
+        addGems(1, `Meowdoku 0-mistake bonus`);
+      }
       onGameEnd(Math.max(score, 0), 1, stars);
       setIsNewHighScore(score > highScore);
       setGameState("won");
       confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
     };
-    engine.onMistake = (m) => {
-      setMistakes(m);
-      if (m >= 3) setGameState("lost");
+    engine.onMistake = (remaining) => {
+      setMistakes(3 - remaining);
+      if (remaining <= 0) setGameState("lost");
     };
     engineRef.current = engine;
     onGameStart();
@@ -65,7 +74,7 @@ export default function MeowdokuGame() {
     setNoteMode(false);
     setGameState("playing");
     setIsNewHighScore(false);
-  }, [difficulty, onGameStart, onGameEnd, addPaws, highScore]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [difficulty, gameStarted, onGameStart, onGameEnd, addPaws, highScore]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Timer
   useEffect(() => {
@@ -110,7 +119,42 @@ export default function MeowdokuGame() {
   };
 
   const engine = engineRef.current;
-  if (!engine) return null;
+
+  // Start screen with difficulty selection
+  if (!gameStarted || !engine) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-6 px-4">
+        <div className="text-center">
+          <h2 className="font-heading text-2xl font-bold text-foreground mb-1">Meowdoku</h2>
+          <p className="text-sm text-muted-foreground">Choose your difficulty</p>
+        </div>
+        <div className="flex flex-col gap-2 w-full max-w-[240px]">
+          {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
+            <button
+              key={d}
+              onClick={() => setDifficulty(d)}
+              className={`flex items-center justify-between px-5 py-3 rounded-xl text-sm font-bold capitalize transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                d === difficulty
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              <span>{d}</span>
+              <span className="text-xs opacity-70">
+                {d === "easy" ? "35 gaps" : d === "medium" ? "45 gaps" : "55 gaps"}
+              </span>
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => setGameStarted(true)}
+          className="px-8 py-3 rounded-xl bg-gradient-to-r from-pink-400 to-violet-400 text-white font-heading font-bold text-sm active:scale-95 transition-transform"
+        >
+          Start Game
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -130,21 +174,11 @@ export default function MeowdokuGame() {
         </span>
       </div>
 
-      {/* Difficulty selector */}
-      <div className="flex gap-2 mb-3">
-        {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
-          <button
-            key={d}
-            onClick={() => setDifficulty(d)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-              d === difficulty
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {d}
-          </button>
-        ))}
+      {/* Current difficulty badge */}
+      <div className="mb-3">
+        <span className="px-3 py-1 rounded-lg text-xs font-bold capitalize bg-muted text-muted-foreground">
+          {difficulty}
+        </span>
       </div>
 
       {/* 9x9 Grid */}
@@ -183,7 +217,7 @@ export default function MeowdokuGame() {
                     : isHint
                       ? "bg-gold/30"
                       : sameValue
-                        ? "bg-primary/20"
+                        ? "bg-accent/10"
                         : inSameUnit
                           ? "bg-primary/10"
                           : "bg-transparent"
@@ -218,15 +252,24 @@ export default function MeowdokuGame() {
         >
           <Pencil className="w-3.5 h-3.5" /> Notes
         </button>
-        {Array.from({ length: 9 }, (_, i) => i + 1).map((n) => (
-          <button
-            key={n}
-            onClick={() => handleNumberInput(n)}
-            className="w-9 h-9 rounded-lg bg-muted text-foreground font-bold text-sm active:scale-90 transition-transform hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {n}
-          </button>
-        ))}
+        {Array.from({ length: 9 }, (_, i) => i + 1).map((n) => {
+          const count = engine.puzzle.flat().filter((v) => v === n).length;
+          const remaining = 9 - count;
+          return (
+            <button
+              key={n}
+              onClick={() => handleNumberInput(n)}
+              className="relative w-9 h-9 rounded-lg bg-muted text-foreground font-bold text-sm active:scale-90 transition-transform hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {n}
+              {remaining > 0 && (
+                <span className="absolute -top-1 -right-1 text-[8px] bg-primary/40 text-primary-foreground rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none">
+                  {remaining}
+                </span>
+              )}
+            </button>
+          );
+        })}
         <button
           onClick={() => handleNumberInput(0)}
           className="w-9 h-9 rounded-lg bg-muted text-muted-foreground active:scale-90 transition-transform"
@@ -267,6 +310,12 @@ export default function MeowdokuGame() {
                 className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm active:scale-95 transition-transform"
               >
                 <RotateCcw className="w-4 h-4" /> Play Again
+              </button>
+              <button
+                onClick={() => setGameStarted(false)}
+                className="px-5 py-2.5 rounded-xl bg-white/10 text-white font-heading font-bold text-sm active:scale-95 transition-transform"
+              >
+                New Game
               </button>
               <button
                 onClick={() => navigate("/")}

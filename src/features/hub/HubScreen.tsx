@@ -58,6 +58,7 @@ const games: GameMeta[] = [
     difficulty: "medium",
     category: "puzzle",
     isComingSoon: false,
+    isFeatured: true,
   },
   {
     id: "meowdoku",

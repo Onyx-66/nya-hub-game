@@ -63,9 +63,10 @@ export class MeowdokuEngine {
   state: "playing" | "won" | "lost";
   difficulty: Difficulty;
   selectedCell: CellPosition | null;
+  startTime: number;
 
   onWin: (() => void) | null = null;
-  onMistake: ((mistakes: number) => void) | null = null;
+  onMistake: ((remaining: number) => void) | null = null;
 
   constructor(difficulty: Difficulty = "medium") {
     this.difficulty = difficulty;
@@ -79,6 +80,7 @@ export class MeowdokuEngine {
     this.maxMistakes = 3;
     this.state = "playing";
     this.selectedCell = null;
+    this.startTime = Date.now();
   }
 
   generateSolution(): Grid {
@@ -128,7 +130,7 @@ export class MeowdokuEngine {
       return true;
     } else {
       this.mistakes++;
-      this.onMistake?.(this.mistakes);
+      this.onMistake?.(this.maxMistakes - this.mistakes);
       if (this.mistakes >= this.maxMistakes) {
         this.state = "lost";
       }
@@ -203,6 +205,11 @@ export class MeowdokuEngine {
     this.mistakes = 0;
     this.state = "playing";
     this.selectedCell = null;
+    this.startTime = Date.now();
+  }
+
+  getElapsedTime(): number {
+    return Math.floor((Date.now() - this.startTime) / 1000);
   }
 }
 

@@ -9,7 +9,7 @@ export const MEOWDOKU_META: GameMeta = {
     ar: "سودوكو بنكهة قطط!",
   },
   icon: "",
-  iconPath: "lucide:LayoutGrid",
+  iconPath: "/assets/images/games/meowdoku/icon.svg",
   primaryColor: "#C084FC",
   difficulty: "hard",
   category: "puzzle",
