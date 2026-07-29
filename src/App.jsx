@@ -8,7 +8,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import HubScreen from '@/features/hub/HubScreen';
 import ProfileScreen from '@/features/auth/ProfileScreen';
-import StoreScreen from '@/features/store/StoreScreen';
+import StoreScreen from '@/features/store/components/StoreScreen';
 import RankingsScreen from '@/features/ranking/RankingsScreen';
 import GameWrapper from '@/games/GameWrapper';
 // Add page imports here
