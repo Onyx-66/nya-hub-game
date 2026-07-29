@@ -220,6 +220,8 @@ export default function SnakeGame() {
           height={CANVAS_SIZE}
           className="block w-full h-auto rounded-2xl border border-border/50 shadow-lg"
           style={{ aspectRatio: "1 / 1" }}
+          aria-label="Snake game board"
+          role="img"
         />
 
         {/* Score + level + pause button (top bar overlay) */}
@@ -233,7 +235,7 @@ export default function SnakeGame() {
             </div>
             <button
               onClick={togglePause}
-              className="pointer-events-auto w-9 h-9 rounded-xl bg-black/40 backdrop-blur-sm flex items-center justify-center text-white active:scale-95 transition-transform"
+              className="pointer-events-auto w-11 h-11 rounded-xl bg-black/40 backdrop-blur-sm flex items-center justify-center text-white active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
               aria-label={isPaused ? "Resume" : "Pause"}
             >
               {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
@@ -247,7 +249,7 @@ export default function SnakeGame() {
             <span className="text-5xl">🐍</span>
             <button
               onClick={startGame}
-              className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm active:scale-95 transition-transform"
+              className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               Start Game
             </button>
@@ -344,7 +346,7 @@ function DpadButton({
         e.preventDefault();
         onPress(dir);
       }}
-      className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 text-white active:bg-primary active:scale-110 transition-colors touch-none"
+      className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 text-white active:bg-primary active:scale-110 transition-colors touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       aria-label={dir}
     >
       {children}

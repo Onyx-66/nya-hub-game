@@ -19,7 +19,7 @@ export default function BottomNav() {
             to={to}
             end={to === "/"}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 py-2 rounded-2xl transition-colors ${
+              `flex flex-col items-center gap-0.5 py-2 rounded-2xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"

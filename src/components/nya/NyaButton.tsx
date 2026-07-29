@@ -61,7 +61,7 @@ export default function NyaButton({
       whileTap={{ scale: 0.94 }}
       whileHover={{ scale: isDisabled ? 1 : 1.03 }}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
-      className={`inline-flex items-center justify-center font-heading font-semibold transition-colors disabled:opacity-50 disabled:pointer-events-none ${
+      className={`inline-flex items-center justify-center font-heading font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:pointer-events-none ${
         sizeStyles[size]
       } ${variantStyles[variant]} ${fullWidth ? "w-full" : ""} ${className}`}
     >

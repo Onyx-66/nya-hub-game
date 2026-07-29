@@ -37,7 +37,7 @@ export default function FeaturedBanner({
   const game = games[index];
 
   return (
-    <div className="relative w-full overflow-hidden rounded-3xl shadow-xl">
+    <div className="relative w-full overflow-hidden rounded-2xl shadow-xl">
       <AnimatePresence mode="wait">
         <motion.div
           key={game.id}
@@ -73,7 +73,7 @@ export default function FeaturedBanner({
             </p>
             <button
               onClick={() => onPlay(game)}
-              className="mt-3 inline-flex items-center gap-1.5 bg-white text-gray-900 text-xs font-bold px-4 py-2 rounded-full active:scale-95 transition-transform"
+              className="mt-3 inline-flex items-center gap-1.5 bg-white text-gray-900 text-xs font-bold px-4 py-2.5 rounded-full active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
             >
               <Play className="w-3 h-3 fill-gray-900" /> Play Now
             </button>
@@ -86,14 +86,14 @@ export default function FeaturedBanner({
         <>
           <button
             onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/50 transition-colors"
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-label="Previous"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={next}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/50 transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-label="Next"
           >
             <ChevronRight className="w-4 h-4" />

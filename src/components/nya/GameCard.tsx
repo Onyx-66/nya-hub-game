@@ -48,7 +48,7 @@ export default function GameCard({ game, index = 0, highScore, onPlay }: GameCar
       className="relative"
     >
       <div
-        className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${gradient} p-4 aspect-[4/5] flex flex-col justify-between shadow-lg ${
+        className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} p-4 aspect-[4/5] flex flex-col justify-between shadow-lg ${
           locked ? "opacity-60" : ""
         }`}
       >
@@ -123,7 +123,7 @@ export default function GameCard({ game, index = 0, highScore, onPlay }: GameCar
             <button
               onClick={() => !locked && onPlay?.(game)}
               disabled={locked}
-              className={`flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full transition-all ${
+              className={`flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${
                 locked
                   ? "bg-black/30 text-white/50 cursor-not-allowed"
                   : "bg-white text-gray-900 active:scale-95"

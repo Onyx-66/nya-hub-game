@@ -117,7 +117,7 @@ export default function StoreItemCard({
             <button
               onClick={handleClick}
               disabled={disabled || status === "loading"}
-              className="relative flex items-center justify-center gap-1.5 bg-white/25 hover:bg-white/35 backdrop-blur-sm text-xs font-bold py-2 px-4 rounded-xl transition-all active:scale-95 disabled:pointer-events-none"
+              className="relative flex items-center justify-center gap-1.5 bg-white/25 hover:bg-white/35 backdrop-blur-sm text-xs font-bold min-h-[44px] py-2 px-4 rounded-xl transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 disabled:pointer-events-none"
             >
               {status === "loading" ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

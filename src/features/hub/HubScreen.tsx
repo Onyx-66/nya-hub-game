@@ -23,7 +23,7 @@ const games: GameMeta[] = [
     icon: "🐦",
     difficulty: "medium",
     category: "action",
-    isComingSoon: false,
+    isComingSoon: true,
   },
   {
     id: "sword-of-knowledge",
@@ -49,7 +49,7 @@ const games: GameMeta[] = [
     icon: "🧱",
     difficulty: "medium",
     category: "puzzle",
-    isComingSoon: false,
+    isComingSoon: true,
   },
   {
     id: "water-sort",
@@ -62,7 +62,7 @@ const games: GameMeta[] = [
     icon: "💧",
     difficulty: "easy",
     category: "puzzle",
-    isComingSoon: false,
+    isComingSoon: true,
   },
   {
     id: "meowdoku",
@@ -88,7 +88,7 @@ const games: GameMeta[] = [
     icon: "🍬",
     difficulty: "easy",
     category: "puzzle",
-    isComingSoon: false,
+    isComingSoon: true,
   },
   {
     id: "drawing-coloring",
@@ -101,7 +101,7 @@ const games: GameMeta[] = [
     icon: "🎨",
     difficulty: "easy",
     category: "idle",
-    isComingSoon: false,
+    isComingSoon: true,
   },
 ];
 
