@@ -1,19 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <rect width="512" height="512" rx="96" fill="#1a1a2e"/>
-  <!-- Sword blade -->
-  <path d="M256 70 L272 70 L272 300 L256 322 L240 300 L240 70 Z" fill="#C084FC"/>
-  <path d="M256 70 L256 322" stroke="#E0C0FF" stroke-width="2"/>
-  <!-- Crossguard -->
-  <rect x="200" y="300" width="112" height="14" fill="#FBBF24" rx="3"/>
-  <!-- Handle -->
-  <rect x="248" y="314" width="16" height="40" fill="#8B4513" rx="2"/>
-  <!-- Pommel -->
-  <circle cx="256" cy="362" r="12" fill="#FBBF24"/>
-  <!-- Book (knowledge) -->
-  <rect x="180" y="395" width="152" height="70" fill="#60A5FA" rx="6"/>
-  <line x1="256" y1="400" x2="256" y2="460" stroke="#1a1a2e" stroke-width="2"/>
-  <line x1="210" y1="415" x2="240" y2="415" stroke="#1a1a2e" stroke-width="1.5" opacity="0.5"/>
-  <line x1="210" y1="430" x2="240" y2="430" stroke="#1a1a2e" stroke-width="1.5" opacity="0.5"/>
-  <line x1="272" y1="415" x2="302" y2="415" stroke="#1a1a2e" stroke-width="1.5" opacity="0.5"/>
-  <line x1="272" y1="430" x2="302" y2="430" stroke="#1a1a2e" stroke-width="1.5" opacity="0.5"/>
+  <!-- Crown -->
+  <path d="M176 60 L196 30 L216 55 L256 20 L296 55 L316 30 L336 60 L336 90 L176 90 Z" fill="#FBBF24" stroke="#D97706" stroke-width="2"/>
+  <circle cx="196" cy="40" r="6" fill="#EF4444"/>
+  <circle cx="256" cy="30" r="7" fill="#60A5FA"/>
+  <circle cx="316" cy="40" r="6" fill="#EF4444"/>
+  <rect x="176" y="80" width="160" height="12" fill="#D97706" rx="2"/>
+
+  <!-- Left sword (rotated -45deg) -->
+  <g transform="rotate(-35 256 280)">
+    <path d="M256 110 L270 110 L270 340 L256 360 L242 340 L242 110 Z" fill="#FBBF24"/>
+    <path d="M256 110 L256 360" stroke="#FCD34D" stroke-width="2"/>
+    <rect x="205" y="340" width="102" height="12" fill="#D97706" rx="2"/>
+    <rect x="250" y="352" width="12" height="32" fill="#8B4513" rx="2"/>
+    <circle cx="256" cy="390" r="10" fill="#FBBF24"/>
+  </g>
+
+  <!-- Right sword (rotated 45deg) -->
+  <g transform="rotate(35 256 280)">
+    <path d="M256 110 L270 110 L270 340 L256 360 L242 340 L242 110 Z" fill="#FBBF24"/>
+    <path d="M256 110 L256 360" stroke="#FCD34D" stroke-width="2"/>
+    <rect x="205" y="340" width="102" height="12" fill="#D97706" rx="2"/>
+    <rect x="250" y="352" width="12" height="32" fill="#8B4513" rx="2"/>
+    <circle cx="256" cy="390" r="10" fill="#FBBF24"/>
+  </g>
+
+  <!-- Sparkles -->
+  <circle cx="150" cy="420" r="4" fill="#FBBF24" opacity="0.6"/>
+  <circle cx="362" cy="420" r="4" fill="#FBBF24" opacity="0.6"/>
+  <circle cx="120" cy="360" r="3" fill="#FBBF24" opacity="0.4"/>
+  <circle cx="392" cy="360" r="3" fill="#FBBF24" opacity="0.4"/>
 </svg>
