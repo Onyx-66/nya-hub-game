@@ -14,6 +14,8 @@ import MeowdokuGameWrapper from "@/games/meowdoku";
 import { MEOWDOKU_META } from "@/games/meowdoku/game.config";
 import FuriousFelinesGameWrapper from "@/games/angry-birds";
 import { ANGRY_BIRDS_META } from "@/games/angry-birds/game.config";
+import QuizSwordGameWrapper from "@/games/quiz-sword";
+import { QUIZ_SWORD_META } from "@/games/quiz-sword/game.config";
 
 interface GameEntry {
   name: string;
@@ -26,6 +28,7 @@ const GAME_ENTRIES: Record<string, GameEntry> = {
   "water-sort": { name: WATER_SORT_META.displayName ?? "Water Sort", Component: WaterSortGameWrapper },
   meowdoku: { name: MEOWDOKU_META.displayName ?? "Meowdoku", Component: MeowdokuGameWrapper },
   "angry-birds": { name: ANGRY_BIRDS_META.displayName ?? "Furious Felines", Component: FuriousFelinesGameWrapper },
+  "quiz-sword": { name: QUIZ_SWORD_META.displayName ?? "Sword of Knowledge", Component: QuizSwordGameWrapper },
 };
 
 function GameLoadingScreen({ name }: { name: string }) {

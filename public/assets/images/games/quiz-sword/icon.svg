@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#1a1a2e"/>
+  <!-- Sword blade -->
+  <path d="M256 70 L272 70 L272 300 L256 322 L240 300 L240 70 Z" fill="#C084FC"/>
+  <path d="M256 70 L256 322" stroke="#E0C0FF" stroke-width="2"/>
+  <!-- Crossguard -->
+  <rect x="200" y="300" width="112" height="14" fill="#FBBF24" rx="3"/>
+  <!-- Handle -->
+  <rect x="248" y="314" width="16" height="40" fill="#8B4513" rx="2"/>
+  <!-- Pommel -->
+  <circle cx="256" cy="362" r="12" fill="#FBBF24"/>
+  <!-- Book (knowledge) -->
+  <rect x="180" y="395" width="152" height="70" fill="#60A5FA" rx="6"/>
+  <line x1="256" y1="400" x2="256" y2="460" stroke="#1a1a2e" stroke-width="2"/>
+  <line x1="210" y1="415" x2="240" y2="415" stroke="#1a1a2e" stroke-width="1.5" opacity="0.5"/>
+  <line x1="210" y1="430" x2="240" y2="430" stroke="#1a1a2e" stroke-width="1.5" opacity="0.5"/>
+  <line x1="272" y1="415" x2="302" y2="415" stroke="#1a1a2e" stroke-width="1.5" opacity="0.5"/>
+  <line x1="272" y1="430" x2="302" y2="430" stroke="#1a1a2e" stroke-width="1.5" opacity="0.5"/>
+</svg>
