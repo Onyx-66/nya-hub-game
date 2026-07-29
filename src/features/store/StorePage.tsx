@@ -3,16 +3,17 @@ import { Coins, Gem, Check } from "lucide-react";
 import { useState } from "react";
 import { storeItems } from "@/services/games";
 import { usePlayerStore } from "@/store/usePlayerStore";
+import type { Currency } from "@/types";
 
 export default function StorePage() {
   const { coins, gems, spendCoins, spendGems, addCoins } = usePlayerStore();
   const [purchased, setPurchased] = useState<string | null>(null);
 
-  const handleBuy = (id: string, price: number, currency: "coins" | "gems") => {
-    const ok = currency === "coins" ? spendCoins(price) : spendGems(price);
+  const handleBuy = (id: string, price: number, currency: Currency) => {
+    const ok = currency === "paws" ? spendCoins(price) : spendGems(price);
     if (ok) {
-      // If it's a currency pack, add coins
-      if (id.startsWith("coins-")) {
+      // If it's a currency pack, add paws
+      if (id.startsWith("paws-")) {
         addCoins(parseInt(id.split("-")[1]));
       }
       setPurchased(id);
@@ -67,7 +68,7 @@ export default function StorePage() {
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                 purchased === item.id
                   ? "bg-green-500 text-white"
-                  : item.currency === "coins"
+                  : item.currency === "paws"
                   ? "bg-yellow-400/20 text-yellow-400 hover:bg-yellow-400/30"
                   : "bg-cyan-400/20 text-cyan-400 hover:bg-cyan-400/30"
               }`}
@@ -78,7 +79,7 @@ export default function StorePage() {
                 </>
               ) : (
                 <>
-                  {item.currency === "coins" ? (
+                  {item.currency === "paws" ? (
                     <Coins className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                   ) : (
                     <Gem className="w-3.5 h-3.5 fill-cyan-400 text-cyan-400" />

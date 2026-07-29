@@ -33,7 +33,7 @@ export default function RankingPage() {
             >
               <span className="text-3xl mb-1">{entry.avatar}</span>
               <span className="text-xs font-bold text-foreground truncate max-w-full">
-                {entry.playerName}
+                {entry.pseudonym}
               </span>
               <span className="text-xs text-muted-foreground mb-1">
                 {entry.score.toLocaleString()}
@@ -76,7 +76,7 @@ export default function RankingPage() {
             <span className="text-2xl">{entry.avatar}</span>
             <div className="flex-1">
               <span className="text-sm font-semibold text-foreground">
-                {entry.playerName}
+                {entry.pseudonym}
                 {entry.isYou && (
                   <span className="ml-1 text-xs text-primary">(You)</span>
                 )}
