@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import PawCounter from "./PawCounter";
 import GemCounter from "./GemCounter";
+import BottomNav from "@/components/BottomNav";
 
 interface NyaLayoutProps {
   children: ReactNode;
@@ -16,8 +17,8 @@ interface NyaLayoutProps {
 
 /**
  * Default screen wrapper for Nya Hub.
- * Includes a sticky top bar (back button, title, currency counters)
- * and a scrollable content area.
+ * Includes a sticky top bar (back button, title, currency counters),
+ * a scrollable content area, and bottom navigation.
  */
 export default function NyaLayout({
   children,
@@ -36,7 +37,7 @@ export default function NyaLayout({
     <div className="min-h-screen bg-background flex flex-col">
       {/* ── Top Bar ── */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-md md:max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           {showBack && (
             <button
               onClick={handleBack}
@@ -54,7 +55,9 @@ export default function NyaLayout({
           )}
 
           <div
-            className={`flex items-center gap-2 ${!title ? "flex-1 justify-end" : "shrink-0"}`}
+            className={`flex items-center gap-2 ${
+              !title ? "flex-1 justify-end" : "shrink-0"
+            }`}
           >
             <PawCounter />
             <GemCounter />
@@ -64,8 +67,13 @@ export default function NyaLayout({
 
       {/* ── Scrollable Content ── */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-md mx-auto px-4 py-5">{children}</div>
+        <div className="max-w-md md:max-w-2xl mx-auto px-4 py-5 pb-28">
+          {children}
+        </div>
       </main>
+
+      {/* ── Bottom Navigation ── */}
+      <BottomNav />
     </div>
   );
 }

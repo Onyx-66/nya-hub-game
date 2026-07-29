@@ -6,12 +6,11 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-import Layout from '@/components/Layout';
-import HubPage from '@/features/hub/HubPage';
-import StorePage from '@/features/store/StorePage';
-import RankingPage from '@/features/ranking/RankingPage';
-import SettingsPage from '@/features/settings/SettingsPage';
-import GamePlayer from '@/games/GamePlayer';
+import HubScreen from '@/features/hub/HubScreen';
+import ProfileScreen from '@/features/profile/ProfileScreen';
+import StoreScreen from '@/features/store/StoreScreen';
+import RankingsScreen from '@/features/ranking/RankingsScreen';
+import GameWrapper from '@/games/GameWrapper';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -40,13 +39,11 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      <Route element={<Layout />}>
-        <Route path="/" element={<HubPage />} />
-        <Route path="/store" element={<StorePage />} />
-        <Route path="/ranking" element={<RankingPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/games/:gameId" element={<GamePlayer />} />
-      </Route>
+      <Route path="/" element={<HubScreen />} />
+      <Route path="/profile" element={<ProfileScreen />} />
+      <Route path="/store" element={<StoreScreen />} />
+      <Route path="/rankings" element={<RankingsScreen />} />
+      <Route path="/game/:slug" element={<GameWrapper />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
