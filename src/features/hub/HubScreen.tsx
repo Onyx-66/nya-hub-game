@@ -9,6 +9,7 @@ import { useGameStore } from "@/store/useGameStore";
 import { SNAKE_GAME_META } from "@/games/snake/game.config";
 import { BLOCK_BLAST_META } from "@/games/block-blast/game.config";
 import { NYA_CRUSH_META } from "@/games/candy-crush/game.config";
+import { COLORING_META } from "@/games/coloring/game.config";
 import type { GameMeta } from "@/types";
 
 /** Placeholder games for the hub — uses the GameMeta type */
@@ -81,21 +82,7 @@ const games: GameMeta[] = [
   },
   { ...BLOCK_BLAST_META, isComingSoon: true },
   NYA_CRUSH_META,
-  {
-    id: "coloring-book",
-    slug: "coloring-book",
-    name: { en: "Coloring Book", ar: "كتاب التلوين" },
-    description: {
-      en: "Unleash your inner artist!",
-      ar: "أطلق الفنان بداخلك!",
-    },
-    icon: "",
-    iconPath: "lucide:Palette",
-    primaryColor: "#34D399",
-    difficulty: "easy",
-    category: "idle",
-    isComingSoon: true,
-  },
+  COLORING_META,
 ];
 
 export default function HubScreen() {

@@ -18,6 +18,8 @@ import QuizSwordGameWrapper from "@/games/quiz-sword";
 import { QUIZ_SWORD_META } from "@/games/quiz-sword/game.config";
 import NyaCrushGameWrapper from "@/games/candy-crush";
 import { NYA_CRUSH_META } from "@/games/candy-crush/game.config";
+import ColoringGameWrapper from "@/games/coloring";
+import { COLORING_META } from "@/games/coloring/game.config";
 
 interface GameEntry {
   name: string;
@@ -32,6 +34,7 @@ const GAME_ENTRIES: Record<string, GameEntry> = {
   "angry-birds": { name: ANGRY_BIRDS_META.displayName ?? "Furious Felines", Component: FuriousFelinesGameWrapper },
   "quiz-sword": { name: QUIZ_SWORD_META.displayName ?? "Sword of Knowledge", Component: QuizSwordGameWrapper },
   "candy-crush": { name: NYA_CRUSH_META.displayName ?? "Nya Crush", Component: NyaCrushGameWrapper },
+  "coloring": { name: COLORING_META.displayName ?? "Cat Coloring Book", Component: ColoringGameWrapper },
 };
 
 function GameLoadingScreen({ name }: { name: string }) {
