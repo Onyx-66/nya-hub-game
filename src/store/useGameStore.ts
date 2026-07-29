@@ -7,11 +7,14 @@ interface GameState {
   gamesPlayed: number;
   setCurrentGame: (gameId: string | null) => void;
   recordScore: (gameId: string, score: number) => void;
+  startGameSession: (slug: string) => void;
+  endGameSession: (slug: string, score: number, level: number, stars: number) => void;
+  getHighScore: (slug: string) => number;
 }
 
 export const useGameStore = create<GameState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       currentGameId: null,
       highScores: {},
       gamesPlayed: 0,
@@ -26,6 +29,20 @@ export const useGameStore = create<GameState>()(
           },
           gamesPlayed: s.gamesPlayed + 1,
         })),
+
+      startGameSession: (slug) => set({ currentGameId: slug }),
+
+      endGameSession: (slug, score) =>
+        set((s) => ({
+          currentGameId: null,
+          highScores: {
+            ...s.highScores,
+            [slug]: Math.max(s.highScores[slug] ?? 0, score),
+          },
+          gamesPlayed: s.gamesPlayed + 1,
+        })),
+
+      getHighScore: (slug) => get().highScores[slug] ?? 0,
     }),
     { name: "nya-hub-games" }
   )

@@ -1,23 +1,28 @@
-import SnakeGameView from "./components/SnakeGame";
-import { SNAKE_META } from "./game.config";
+import React, { Suspense } from "react";
+import { SNAKE_GAME_META } from "./game.config";
 
-/**
- * SnakeGame — main entry component.
- * Renders the playable Snake canvas with full controls and economy integration.
- */
-export default function SnakeGame() {
+// Lazy load the heavy game component
+const SnakeGame = React.lazy(() => import("./components/SnakeGame"));
+
+function SnakeLoadingFallback() {
   return (
-    <div className="flex flex-col items-center gap-4 px-4 py-6">
+    <div className="flex items-center justify-center min-h-[300px]">
       <div className="text-center">
-        <h1 className="font-heading font-bold text-2xl text-foreground flex items-center gap-2 justify-center">
-          <span className="text-3xl">{SNAKE_META.icon}</span>
-          {SNAKE_META.name.en}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-          {SNAKE_META.description.en}
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-sm text-muted-foreground">
+          Loading {SNAKE_GAME_META.displayName}...
         </p>
       </div>
-      <SnakeGameView />
     </div>
   );
 }
+
+export default function SnakeGameWrapper() {
+  return (
+    <Suspense fallback={<SnakeLoadingFallback />}>
+      <SnakeGame />
+    </Suspense>
+  );
+}
+
+export { SNAKE_GAME_META };

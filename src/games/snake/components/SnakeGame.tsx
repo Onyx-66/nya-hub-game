@@ -2,10 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { SnakeGameEngine, type Direction, type GameState } from "../logic/snakeEngine";
 import { renderSnake } from "./snakeRenderer";
-import { useGameEconomy } from "@/hooks/useGameEconomy";
-import { useEconomyStore } from "@/store/economyStore";
-import { useGameStore } from "@/store/useGameStore";
-import { useAuthStore } from "@/store/authStore";
+import { useGameEconomy, scoreToStars } from "@/hooks/useGameEconomy";
 
 // =============================================
 // Constants
@@ -35,52 +32,26 @@ export default function SnakeGame() {
   const [isPaused, setIsPaused] = useState(false);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
 
-  const { checkPowerup } = useGameEconomy("Snake Game");
-  const addPaws = useEconomyStore((s) => s.addPaws);
-  const addGems = useEconomyStore((s) => s.addGems);
-  const recordScore = useGameStore((s) => s.recordScore);
-  const setCurrentGame = useGameStore((s) => s.setCurrentGame);
-  const updateProfile = useAuthStore((s) => s.updateProfile);
-  const highScore = useGameStore((s) => s.highScores[GAME_ID] ?? 0);
+  const { onGameStart, onGameEnd, highScore } = useGameEconomy(GAME_ID);
+  const highScoreRef = useRef(highScore);
+  highScoreRef.current = highScore;
 
   // ── Game over: economy + store updates ──
   const handleGameOver = useCallback(
     (finalScore: number) => {
-      const prevHigh = useGameStore.getState().highScores[GAME_ID] ?? 0;
-      const isHigh = finalScore > prevHigh;
-
-      // Award paws: 1 per 50 points, clamped [1, 100].
-      const paws = Math.min(100, Math.max(1, Math.floor(finalScore / 50)));
-      addPaws(paws, "Snake Game");
-
-      // New high score bonus.
-      if (isHigh) {
-        addPaws(25, "Snake high score bonus");
-        addGems(1);
-      }
-
-      recordScore(GAME_ID, finalScore);
-
-      // Increment the user's gamesPlayed stat.
-      const u = useAuthStore.getState().user;
-      if (u) {
-        updateProfile({
-          gameStats: {
-            ...u.gameStats,
-            gamesPlayed: u.gameStats.gamesPlayed + 1,
-          },
-        });
-      }
-
+      const lvl = engineRef.current?.getLevel() ?? 1;
+      const stars = scoreToStars(finalScore);
+      const isHigh = finalScore > highScoreRef.current;
+      onGameEnd(finalScore, lvl, stars);
       setIsNewHighScore(isHigh);
       setGameState("gameover");
     },
-    [addPaws, addGems, recordScore, updateProfile],
+    [onGameEnd],
   );
 
   // ── Start / Restart ──
   const startGame = useCallback(() => {
-    checkPowerup();
+    onGameStart();
     const engine = new SnakeGameEngine({
       gridWidth: GRID_W,
       gridHeight: GRID_H,
@@ -99,15 +70,13 @@ export default function SnakeGame() {
     setIsPaused(false);
     setIsNewHighScore(false);
     setGameState("playing");
-    setCurrentGame(GAME_ID);
-  }, [checkPowerup, handleGameOver, setCurrentGame]);
+  }, [onGameStart, handleGameOver]);
 
   const quitGame = useCallback(() => {
     engineRef.current = null;
     setGameState("idle");
     setIsPaused(false);
-    setCurrentGame(null);
-  }, [setCurrentGame]);
+  }, []);
 
   // ── Pause / Resume ──
   const togglePause = useCallback(() => {

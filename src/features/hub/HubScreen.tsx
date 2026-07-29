@@ -3,23 +3,13 @@ import { motion } from "framer-motion";
 import NyaLayout from "@/components/nya/NyaLayout";
 import GameCard from "@/components/nya/GameCard";
 import { usePlayerStore } from "@/store/usePlayerStore";
+import { useGameStore } from "@/store/useGameStore";
+import { SNAKE_GAME_META } from "@/games/snake/game.config";
 import type { GameMeta } from "@/types";
 
 /** Placeholder games for the hub — uses the GameMeta type */
 const games: GameMeta[] = [
-  {
-    id: "snake-game",
-    slug: "snake-game",
-    name: { en: "Snake Game", ar: "لعبة الثعبان" },
-    description: {
-      en: "Classic snake — eat, grow, survive!",
-      ar: "الثعبان الكلاسيكي — كل، انمو، انجُ!",
-    },
-    icon: "🐍",
-    difficulty: "easy",
-    category: "arcade",
-    isComingSoon: false,
-  },
+  SNAKE_GAME_META,
   {
     id: "angry-birds",
     slug: "angry-birds",
@@ -116,6 +106,7 @@ const games: GameMeta[] = [
 export default function HubScreen() {
   const navigate = useNavigate();
   const { name } = usePlayerStore();
+  const highScores = useGameStore((s) => s.highScores);
 
   return (
     <NyaLayout showBack={false} title="Nya Hub 🐾">
@@ -148,6 +139,7 @@ export default function HubScreen() {
                 key={game.id}
                 game={game}
                 index={i}
+                highScore={highScores[game.slug] ?? 0}
                 onPlay={(g) => navigate(`/game/${g.slug}`)}
               />
             ))}

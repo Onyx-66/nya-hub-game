@@ -40,7 +40,22 @@ export interface GameMeta {
   difficulty: GameDifficulty;
   category: GameCategory;
   isComingSoon: boolean;
+  // Enrichment fields (optional — used by games with full metadata)
+  displayName?: string;
+  arabicName?: string;
+  shortDescription?: string;
+  iconPath?: string;
+  bannerPath?: string;
+  isFeatured?: boolean;
+  maxLevels?: number;
+  tutorialRequired?: boolean;
+  tags?: string[];
+  releaseDate?: string;
+  version?: string;
 }
+
+/** Slug identifying a game within the hub (e.g. "snake"). */
+export type GameSlug = string;
 
 /**
  * Runtime game configuration — pairs metadata with its React component

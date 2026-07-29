@@ -1,27 +1,69 @@
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { PawPrint } from "lucide-react";
 import NyaButton from "@/components/nya/NyaButton";
 import NyaLayout from "@/components/nya/NyaLayout";
-import SnakeGame from "@/games/snake";
+import SnakeGameWrapper from "@/games/snake";
+import { SNAKE_GAME_META } from "@/games/snake/game.config";
 
-/**
- * Generic game wrapper — reads the :slug param and renders the matching game.
- */
-const GAME_COMPONENTS: Record<string, React.ComponentType> = {
-  snake: SnakeGame,
+interface GameEntry {
+  name: string;
+  Component: React.ComponentType;
+}
+
+const GAME_ENTRIES: Record<string, GameEntry> = {
+  snake: { name: SNAKE_GAME_META.displayName ?? "Snake", Component: SnakeGameWrapper },
 };
+
+function GameLoadingScreen({ name }: { name: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 py-16">
+      <motion.div
+        animate={{ scale: [1, 1.15, 1], rotate: [0, 8, -8, 0] }}
+        transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+        className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-400 to-violet-500 flex items-center justify-center shadow-lg"
+      >
+        <PawPrint className="w-8 h-8 text-white" />
+      </motion.div>
+      <p className="font-heading text-sm text-muted-foreground">Loading {name}...</p>
+    </div>
+  );
+}
 
 export default function GameWrapper() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
-  const GameComponent = slug ? GAME_COMPONENTS[slug] : null;
+  const entry = slug ? GAME_ENTRIES[slug] : null;
 
-  if (GameComponent) {
+  // Brief loading transition on every game entry (min ~500ms feel).
+  useEffect(() => {
+    setLoading(true);
+    const t = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(t);
+  }, [slug]);
+
+  if (entry) {
+    const { Component, name } = entry;
     return (
-      <NyaLayout title={slug === "snake" ? "Snake" : "Game"}>
-        <GameComponent />
+      <NyaLayout title={name}>
+        <div className="relative min-h-[60vh]">
+          <Component />
+          <AnimatePresence>
+            {loading && (
+              <motion.div
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="absolute inset-0 z-10 flex items-center justify-center bg-background/95 backdrop-blur-sm rounded-2xl"
+              >
+                <GameLoadingScreen name={name} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </NyaLayout>
     );
   }

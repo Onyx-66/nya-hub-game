@@ -1,37 +1,55 @@
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { useEconomyStore } from "@/store/economyStore";
+import { useGameStore } from "@/store/useGameStore";
 
 /**
- * Integrates a game session with the global economy.
- * Awards Paws based on points scored (1 Paw per 5 points).
+ * Maps a game score to a 0–3 star rating based on performance thresholds.
  */
-export function useGameEconomy(gameName: string) {
-  const addPaws = useEconomyStore((s) => s.addPaws);
-  const pendingPaws = useRef(0);
+export function scoreToStars(score: number): number {
+  if (score >= 150) return 3;
+  if (score >= 50) return 2;
+  if (score > 0) return 1;
+  return 0;
+}
 
-  /**
-   * Called when the player scores points in-game.
-   * Accumulates points and awards 1 Paw for every 5 points.
-   */
-  const awardPoints = useCallback(
-    (points: number) => {
-      pendingPaws.current += points;
-      while (pendingPaws.current >= 5) {
-        pendingPaws.current -= 5;
-        addPaws(1, gameName);
+/**
+ * Economy + session integration for any game.
+ * Wires game start/end into the global economy and game stores.
+ */
+export function useGameEconomy(gameSlug: string) {
+  const addPaws = useEconomyStore((s) => s.addPaws);
+  const addGems = useEconomyStore((s) => s.addGems);
+  const startSession = useGameStore((s) => s.startGameSession);
+  const endSession = useGameStore((s) => s.endGameSession);
+  const getHighScore = useGameStore((s) => s.getHighScore);
+  const highScore = useGameStore((s) => s.highScores[gameSlug] ?? 0);
+
+  const onGameStart = useCallback(() => {
+    startSession(gameSlug);
+  }, [gameSlug, startSession]);
+
+  const onGameEnd = useCallback(
+    (score: number, level: number, stars: number) => {
+      // Calculate paws earned: 1 per 50 points, clamped [1, 100].
+      const pawsEarned = Math.max(1, Math.min(100, Math.floor(score / 50)));
+      addPaws(pawsEarned, `${gameSlug} game reward`);
+
+      // High score bonus (only when beating a non-zero previous best).
+      const previousBest = getHighScore(gameSlug);
+      if (score > previousBest && previousBest > 0) {
+        addPaws(25, "New high score bonus");
+        addGems(1);
       }
+
+      // End session in game store (records high score + gamesPlayed).
+      endSession(gameSlug, score, level, stars);
     },
-    [addPaws, gameName]
+    [gameSlug, addPaws, addGems, getHighScore, endSession],
   );
 
-  /**
-   * Called when a game starts. Checks for an active powerup.
-   * (Powerup system will be built later — logs for now.)
-   */
-  const checkPowerup = useCallback(() => {
-    // TODO: implement powerup detection once the powerup system exists
-    console.log(`[${gameName}] Checking for active powerup… (not implemented)`);
-  }, [gameName]);
-
-  return { awardPoints, checkPowerup };
+  return {
+    onGameStart,
+    onGameEnd,
+    highScore,
+  };
 }

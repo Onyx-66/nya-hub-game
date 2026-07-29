@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
-import { Lock, Play } from "lucide-react";
+import { Lock, Play, Star } from "lucide-react";
 import type { GameMeta } from "@/types";
+import { scoreToStars } from "@/hooks/useGameEconomy";
 
 interface GameCardProps {
   game: GameMeta;
   index?: number;
+  highScore?: number;
   onPlay?: (game: GameMeta) => void;
 }
 
@@ -22,9 +24,10 @@ const categoryGradients: Record<string, string> = {
  * Hub game card — displays a game's icon, name, difficulty, and a Play button.
  * Accepts a GameMeta object. Shows a "Coming Soon" lock state when isComingSoon is true.
  */
-export default function GameCard({ game, index = 0, onPlay }: GameCardProps) {
+export default function GameCard({ game, index = 0, highScore, onPlay }: GameCardProps) {
   const gradient = categoryGradients[game.category] ?? "from-pink-400 to-violet-500";
   const locked = game.isComingSoon;
+  const stars = scoreToStars(highScore ?? 0);
 
   return (
     <motion.div
@@ -65,9 +68,24 @@ export default function GameCard({ game, index = 0, onPlay }: GameCardProps) {
             {game.name.en}
           </h3>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-[11px] text-white/80 capitalize">
-              {game.difficulty}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-white/80 capitalize">
+                {game.difficulty}
+              </span>
+              {highScore !== undefined && highScore > 0 && (
+                <div className="flex items-center gap-0.5">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-3 h-3 ${
+                        i < stars ? "fill-gold text-gold" : "text-white/25"
+                      }`}
+                    />
+                  ))}
+                  <span className="text-[10px] text-white/70 ml-1">{highScore}</span>
+                </div>
+              )}
+            </div>
             <button
               onClick={() => !locked && onPlay?.(game)}
               disabled={locked}
