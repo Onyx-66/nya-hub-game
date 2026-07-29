@@ -2,14 +2,29 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { PawPrint } from "lucide-react";
 import NyaButton from "@/components/nya/NyaButton";
+import NyaLayout from "@/components/nya/NyaLayout";
+import SnakeGame from "@/games/snake";
 
 /**
- * Generic game wrapper — reads the :slug param and displays a placeholder.
- * Will be extended to load specific game components based on slug.
+ * Generic game wrapper — reads the :slug param and renders the matching game.
  */
+const GAME_COMPONENTS: Record<string, React.ComponentType> = {
+  snake: SnakeGame,
+};
+
 export default function GameWrapper() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+
+  const GameComponent = slug ? GAME_COMPONENTS[slug] : null;
+
+  if (GameComponent) {
+    return (
+      <NyaLayout title={slug === "snake" ? "Snake" : "Game"}>
+        <GameComponent />
+      </NyaLayout>
+    );
+  }
 
   const displayName =
     slug
