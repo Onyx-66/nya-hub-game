@@ -40,6 +40,7 @@ export interface GameMeta {
   difficulty: GameDifficulty;
   category: GameCategory;
   isComingSoon: boolean;
+  primaryColor?: string;
   // Enrichment fields (optional — used by games with full metadata)
   displayName?: string;
   arabicName?: string;

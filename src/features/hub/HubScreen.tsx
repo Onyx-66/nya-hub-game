@@ -7,11 +7,13 @@ import FeaturedBanner from "@/components/nya/FeaturedBanner";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/useGameStore";
 import { SNAKE_GAME_META } from "@/games/snake/game.config";
+import { BLOCK_BLAST_META } from "@/games/block-blast/game.config";
 import type { GameMeta } from "@/types";
 
 /** Placeholder games for the hub — uses the GameMeta type */
 const games: GameMeta[] = [
   SNAKE_GAME_META,
+  BLOCK_BLAST_META,
   {
     id: "angry-birds",
     slug: "angry-birds",
@@ -20,7 +22,9 @@ const games: GameMeta[] = [
       en: "Launch birds, topple towers!",
       ar: "أطلق الطيور، اهدم الأبراج!",
     },
-    icon: "🐦",
+    icon: "",
+    iconPath: "lucide:Feather",
+    primaryColor: "#F87171",
     difficulty: "medium",
     category: "action",
     isComingSoon: true,
@@ -28,27 +32,16 @@ const games: GameMeta[] = [
   {
     id: "sword-of-knowledge",
     slug: "sword-of-knowledge",
-    name: { en: "سيف المعرفة", ar: "سيف المعرفة" },
+    name: { en: "Sword of Knowledge", ar: "سيف المعرفة" },
     description: {
       en: "Sharpen your mind with trivia quests!",
       ar: "اشحذ عقلك بأسئلة المعرفة!",
     },
-    icon: "⚔️",
+    icon: "",
+    iconPath: "lucide:Sword",
+    primaryColor: "#FBBF24",
     difficulty: "hard",
     category: "adventure",
-    isComingSoon: true,
-  },
-  {
-    id: "block-blast",
-    slug: "block-blast",
-    name: { en: "Block Blast", ar: "تفجير المربعات" },
-    description: {
-      en: "Match and blast colorful blocks!",
-      ar: "طابق وفجّر المربعات الملونة!",
-    },
-    icon: "🧱",
-    difficulty: "medium",
-    category: "puzzle",
     isComingSoon: true,
   },
   {
@@ -59,7 +52,9 @@ const games: GameMeta[] = [
       en: "Sort colors, solve the puzzle!",
       ar: "افرق الألوان، حل اللغز!",
     },
-    icon: "💧",
+    icon: "",
+    iconPath: "lucide:Droplet",
+    primaryColor: "#60A5FA",
     difficulty: "easy",
     category: "puzzle",
     isComingSoon: true,
@@ -72,7 +67,9 @@ const games: GameMeta[] = [
       en: "Sudoku with a feline twist!",
       ar: "سودوكو بنكهة قطط!",
     },
-    icon: "🐱",
+    icon: "",
+    iconPath: "lucide:LayoutGrid",
+    primaryColor: "#C084FC",
     difficulty: "hard",
     category: "puzzle",
     isComingSoon: true,
@@ -85,7 +82,9 @@ const games: GameMeta[] = [
       en: "Match three candies, win big!",
       ar: "طابق ثلاث حلويات، اربح كبيراً!",
     },
-    icon: "🍬",
+    icon: "",
+    iconPath: "lucide:Gem",
+    primaryColor: "#F472B6",
     difficulty: "easy",
     category: "puzzle",
     isComingSoon: true,
@@ -98,7 +97,9 @@ const games: GameMeta[] = [
       en: "Unleash your inner artist!",
       ar: "أطلق الفنان بداخلك!",
     },
-    icon: "🎨",
+    icon: "",
+    iconPath: "lucide:Palette",
+    primaryColor: "#34D399",
     difficulty: "easy",
     category: "idle",
     isComingSoon: true,
@@ -119,7 +120,7 @@ export default function HubScreen() {
   const featuredGames = games.filter((g) => g.isFeatured && !g.isComingSoon);
 
   return (
-    <NyaLayout showBack={false} title="Nya Hub 🐾">
+    <NyaLayout showBack={false} title="Nya Hub">
       <div className="space-y-5">
         {/* greeting */}
         <motion.div
@@ -129,7 +130,7 @@ export default function HubScreen() {
         >
           <p className="text-muted-foreground text-sm">Welcome back,</p>
           <h2 className="font-heading font-bold text-xl text-foreground">
-            {user?.pseudonym ?? "Nya Player"}! 🐾
+            {user?.pseudonym ?? "Nya Player"}!
           </h2>
         </motion.div>
 

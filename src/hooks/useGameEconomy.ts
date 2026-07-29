@@ -2,6 +2,12 @@ import { useCallback } from "react";
 import { useEconomyStore } from "@/store/economyStore";
 import { useGameStore } from "@/store/useGameStore";
 import { useAuthStore } from "@/store/authStore";
+import {
+  PAWS_PER_GAME_MAX,
+  PAWS_PER_SCORE_DIVISOR,
+  HIGH_SCORE_BONUS_PAWS,
+  HIGH_SCORE_BONUS_GEMS,
+} from "@/utils/constants";
 
 /**
  * Maps a game score to a 0–3 star rating based on performance thresholds.
@@ -32,15 +38,15 @@ export function useGameEconomy(gameSlug: string) {
 
   const onGameEnd = useCallback(
     (score: number, level: number, stars: number) => {
-      // Calculate paws earned: 1 per 50 points, clamped [1, 100].
-      const pawsEarned = Math.max(1, Math.min(100, Math.floor(score / 50)));
+      // Calculate paws earned: 1 per divisor points, clamped [1, max].
+      const pawsEarned = Math.max(1, Math.min(PAWS_PER_GAME_MAX, Math.floor(score / PAWS_PER_SCORE_DIVISOR)));
       addPaws(pawsEarned, `${gameSlug} game reward`);
 
       // High score bonus (only when beating a non-zero previous best).
       const previousBest = getHighScore(gameSlug);
       if (score > previousBest && previousBest > 0) {
-        addPaws(25, "New high score bonus");
-        addGems(1);
+        addPaws(HIGH_SCORE_BONUS_PAWS, "New high score bonus");
+        addGems(HIGH_SCORE_BONUS_GEMS);
       }
 
       // End session in game store (records high score + gamesPlayed).

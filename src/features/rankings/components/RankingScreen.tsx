@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Globe, Flag, Users, Check, Sparkles } from "lucide-react";
 import NyaLayout from "@/components/nya/NyaLayout";
 import { useAuthStore } from "@/store/authStore";
-import { games as registryGames } from "@/games/registry";
 import { useLeaderboard, type LeaderboardScope } from "../hooks/useLeaderboard";
 import PodiumDisplay from "./PodiumDisplay";
 import LeaderboardTable from "./LeaderboardTable";
@@ -15,8 +14,14 @@ interface RankingGame {
 }
 
 const RANKING_GAMES: RankingGame[] = [
-  { slug: "snake", title: "Nya Snake", icon: "🐍" },
-  ...registryGames.map((g) => ({ slug: g.id, title: g.title, icon: g.icon })),
+  { slug: "snake", title: "Nya Snake", icon: "" },
+  { slug: "block-blast", title: "Block Blast", icon: "" },
+  { slug: "angry-birds", title: "Angry Birds", icon: "" },
+  { slug: "sword-of-knowledge", title: "Sword of Knowledge", icon: "" },
+  { slug: "water-sort", title: "Water Sort", icon: "" },
+  { slug: "meowdoku", title: "Meowdoku", icon: "" },
+  { slug: "candy-crush", title: "Candy Crush", icon: "" },
+  { slug: "drawing-coloring", title: "Drawing Coloring", icon: "" },
 ];
 
 const SCOPES: {

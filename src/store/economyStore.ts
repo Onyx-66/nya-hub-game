@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Currency, Transaction, TransactionType } from "@/types";
+import { MAX_TRANSACTIONS_HISTORY } from "@/utils/constants";
 
 // =============================================
 // Helpers
@@ -66,7 +67,7 @@ export const useEconomyStore = create<EconomyState>()(
             transactions: [
               createTransaction(s.userId, "earn", "paws", amount, source),
               ...s.transactions,
-            ],
+            ].slice(0, MAX_TRANSACTIONS_HISTORY),
           };
         }),
 
@@ -78,7 +79,7 @@ export const useEconomyStore = create<EconomyState>()(
           transactions: [
             createTransaction(s.userId, "spend", "paws", amount, `Purchased ${item}`, item),
             ...s.transactions,
-          ],
+          ].slice(0, MAX_TRANSACTIONS_HISTORY),
         });
         return true;
       },
@@ -91,7 +92,7 @@ export const useEconomyStore = create<EconomyState>()(
             transactions: [
               createTransaction(s.userId, "earn", "gems", amount, "Premium currency added"),
               ...s.transactions,
-            ],
+            ].slice(0, MAX_TRANSACTIONS_HISTORY),
           };
         }),
 
@@ -103,7 +104,7 @@ export const useEconomyStore = create<EconomyState>()(
           transactions: [
             createTransaction(s.userId, "spend", "gems", amount, "Premium purchase"),
             ...s.transactions,
-          ],
+          ].slice(0, MAX_TRANSACTIONS_HISTORY),
         });
         return true;
       },

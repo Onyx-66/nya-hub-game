@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Gem } from "lucide-react";
 import { useEconomyStore } from "@/store/economyStore";
+import { formatNumber } from "@/utils/formatting";
 
 interface GemCounterProps {
   className?: string;
@@ -26,7 +27,7 @@ export default function GemCounter({ className = "" }: GemCounterProps) {
         transition={{ type: "spring", stiffness: 500, damping: 18 }}
         className="text-sm font-bold text-foreground tabular-nums"
       >
-        {gems.toLocaleString()}
+        {formatNumber(gems)}
       </motion.span>
     </div>
   );

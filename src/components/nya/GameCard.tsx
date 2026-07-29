@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Lock, Play, Star, Sparkles } from "lucide-react";
+import { Lock, Play, Star, Sparkles, PawPrint, Feather, Sword, LayoutGrid, Droplet, Gem, Palette } from "lucide-react";
+import type { ComponentType, CSSProperties } from "react";
 import type { GameMeta } from "@/types";
 import { scoreToStars } from "@/hooks/useGameEconomy";
 
@@ -9,6 +11,17 @@ interface GameCardProps {
   highScore?: number;
   onPlay?: (game: GameMeta) => void;
 }
+
+type IconComp = ComponentType<{ className?: string; style?: CSSProperties }>;
+
+const LUCIDE_ICONS: Record<string, IconComp> = {
+  Feather,
+  Sword,
+  LayoutGrid,
+  Droplet,
+  Gem,
+  Palette,
+};
 
 /** Pastel gradient per category */
 const categoryGradients: Record<string, string> = {
@@ -26,6 +39,43 @@ const difficultyDots: Record<string, string> = {
   medium: "bg-amber-400",
   hard: "bg-rose-500",
 };
+
+function GameIcon({ game }: { game: GameMeta }) {
+  const [imgError, setImgError] = useState(false);
+  const { iconPath, primaryColor } = game;
+
+  // Lucide icon
+  if (iconPath?.startsWith("lucide:")) {
+    const name = iconPath.slice(6);
+    const Icon = LUCIDE_ICONS[name];
+    if (Icon) {
+      return (
+        <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+          <Icon className="w-12 h-12" style={{ color: primaryColor ?? "#ffffff" }} />
+        </div>
+      );
+    }
+  }
+
+  // Image file (SVG/PNG) — with fallback on load error
+  if (iconPath?.startsWith("/") && !imgError) {
+    return (
+      <img
+        src={iconPath}
+        alt={game.name.en}
+        className="w-16 h-16 rounded-2xl object-cover bg-white/10"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
+  // Fallback: PawPrint icon in game's primary color
+  return (
+    <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+      <PawPrint className="w-12 h-12" style={{ color: primaryColor ?? "#ffffff" }} />
+    </div>
+  );
+}
 
 /**
  * Hub game card — displays a game's icon, name, description, difficulty,
@@ -77,7 +127,7 @@ export default function GameCard({ game, index = 0, highScore, onPlay }: GameCar
 
         {/* icon */}
         <div className="relative flex justify-center items-center flex-1 my-2">
-          <span className="text-6xl drop-shadow-2xl">{game.icon}</span>
+          <GameIcon game={game} />
         </div>
 
         {/* name + description + play */}

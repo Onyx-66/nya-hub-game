@@ -128,3 +128,22 @@ function buildLeaderboard(): RankEntry[] {
 }
 
 export const MOCK_LEADERBOARD_DATA: RankEntry[] = buildLeaderboard();
+
+/**
+ * Generates a per-game leaderboard (50 entries, scores 100–50000).
+ * Uses the gameSlug as a seed so each game has stable but distinct data.
+ */
+export function generateLeaderboard(gameSlug: string): RankEntry[] {
+  const seed = gameSlug.split("").reduce((s, c) => s + c.charCodeAt(0), 0);
+  const rand = mulberry32(seed);
+  const entries: RankEntry[] = PSEUDONYMS.slice(0, 50).map((pseudonym, i) => ({
+    id: `mock_${gameSlug}_${i}`,
+    pseudonym,
+    avatarId: Math.floor(rand() * 20) + 1,
+    country: pickCountry(rand),
+    score: Math.floor(rand() * 49900) + 100,
+    isYou: false,
+  }));
+  entries.sort((a, b) => b.score - a.score);
+  return entries;
+}

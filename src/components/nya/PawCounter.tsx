@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { PawPrint } from "lucide-react";
 import { useEconomyStore } from "@/store/economyStore";
+import { formatNumber } from "@/utils/formatting";
 
 interface PawCounterProps {
   className?: string;
@@ -26,7 +27,7 @@ export default function PawCounter({ className = "" }: PawCounterProps) {
         transition={{ type: "spring", stiffness: 500, damping: 18 }}
         className="text-sm font-bold text-foreground tabular-nums"
       >
-        {paws.toLocaleString()}
+        {formatNumber(paws)}
       </motion.span>
     </div>
   );

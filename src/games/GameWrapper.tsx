@@ -6,6 +6,8 @@ import NyaButton from "@/components/nya/NyaButton";
 import NyaLayout from "@/components/nya/NyaLayout";
 import SnakeGameWrapper from "@/games/snake";
 import { SNAKE_GAME_META } from "@/games/snake/game.config";
+import BlockBlastGameWrapper from "@/games/block-blast";
+import { BLOCK_BLAST_META } from "@/games/block-blast/game.config";
 
 interface GameEntry {
   name: string;
@@ -14,6 +16,7 @@ interface GameEntry {
 
 const GAME_ENTRIES: Record<string, GameEntry> = {
   snake: { name: SNAKE_GAME_META.displayName ?? "Snake", Component: SnakeGameWrapper },
+  "block-blast": { name: BLOCK_BLAST_META.displayName ?? "Block Blast", Component: BlockBlastGameWrapper },
 };
 
 function GameLoadingScreen({ name }: { name: string }) {
@@ -90,7 +93,7 @@ export default function GameWrapper() {
             {displayName}
           </h1>
           <p className="text-muted-foreground text-sm mt-2 max-w-xs mx-auto">
-            This game is being crafted with love. Check back soon! 🐾
+            This game is being crafted with love. Check back soon!
           </p>
         </div>
         <NyaButton onClick={() => navigate("/")}>Back to Hub</NyaButton>

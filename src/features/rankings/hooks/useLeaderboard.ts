@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuthStore } from "@/store/authStore";
 import {
-  MOCK_LEADERBOARD_DATA,
+  generateLeaderboard,
   getCountry,
   type RankEntry,
   type RankedResult,
@@ -36,7 +36,7 @@ function buildRanked(
     getCountry(userCountryCode) ?? getCountry("TN")!;
 
   // Clone base data + inject the current user with a mid-tier score.
-  const base = MOCK_LEADERBOARD_DATA.map((e) => ({ ...e }));
+  const base = generateLeaderboard(gameSlug).map((e) => ({ ...e }));
   const userEntry: RankEntry = {
     id: user?.id ?? "current_user",
     pseudonym: user?.pseudonym ?? "You",
