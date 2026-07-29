@@ -9,7 +9,7 @@ export const COLORING_META: GameMeta = {
     ar: "أطلق الفنان بداخلك! لوّن صفحات قطط لطيفة بألوان زاهية.",
   },
   icon: "",
-  iconPath: "/assets/images/games/coloring/icon.svg",
+  iconPath: "lucide:Palette",
   primaryColor: "#34D399",
   difficulty: "easy",
   category: "idle",

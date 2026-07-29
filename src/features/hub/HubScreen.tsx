@@ -80,7 +80,7 @@ const games: GameMeta[] = [
     isFeatured: true,
     displayName: "Sword of Knowledge",
   },
-  { ...BLOCK_BLAST_META, isComingSoon: true },
+  BLOCK_BLAST_META,
   NYA_CRUSH_META,
   COLORING_META,
 ];

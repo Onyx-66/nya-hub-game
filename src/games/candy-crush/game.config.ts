@@ -9,7 +9,7 @@ export const NYA_CRUSH_META: GameMeta = {
     ar: "طابق ثلاث حلويات، فجر التتابعات، واهزم طريقك للنصر!",
   },
   icon: "",
-  iconPath: "/assets/images/games/candy-crush/icon.svg",
+  iconPath: "lucide:Gem",
   primaryColor: "#F472B6",
   difficulty: "medium",
   category: "puzzle",

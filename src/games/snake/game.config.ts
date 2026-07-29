@@ -16,7 +16,7 @@ export const SNAKE_GAME_META: GameMeta = {
   displayName: "Nya Snake",
   arabicName: "الثعبان القط",
   shortDescription: "Classic snake with a feline twist",
-  iconPath: "/assets/images/games/snake/icon.svg",
+  iconPath: "lucide:Droplet",
   bannerPath: "/assets/images/games/snake/banner.png",
   isFeatured: true,
   maxLevels: 999,

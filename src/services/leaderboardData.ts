@@ -156,3 +156,6 @@ export function generateLeaderboard(
 /** Pre-generated leaderboards for games with specific score ranges. */
 export const ANGRY_BIRDS_LEADERBOARD: RankEntry[] = generateLeaderboard("angry-birds", 1000, 100000);
 export const QUIZ_SWORD_LEADERBOARD: RankEntry[] = generateLeaderboard("quiz-sword", 500, 50000);
+export const BLOCK_BLAST_LEADERBOARD: RankEntry[] = generateLeaderboard("block-blast", 500, 30000);
+export const NYA_CRUSH_LEADERBOARD: RankEntry[] = generateLeaderboard("candy-crush", 1000, 50000);
+export const COLORING_LEADERBOARD: RankEntry[] = generateLeaderboard("coloring", 25, 500);
