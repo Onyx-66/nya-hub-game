@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useEconomyStore } from "@/store/economyStore";
 import { useGameStore } from "@/store/useGameStore";
+import { useAuthStore } from "@/store/authStore";
 
 /**
  * Maps a game score to a 0–3 star rating based on performance thresholds.
@@ -23,6 +24,7 @@ export function useGameEconomy(gameSlug: string) {
   const endSession = useGameStore((s) => s.endGameSession);
   const getHighScore = useGameStore((s) => s.getHighScore);
   const highScore = useGameStore((s) => s.highScores[gameSlug] ?? 0);
+  const updateProfile = useAuthStore((s) => s.updateProfile);
 
   const onGameStart = useCallback(() => {
     startSession(gameSlug);
@@ -43,8 +45,24 @@ export function useGameEconomy(gameSlug: string) {
 
       // End session in game store (records high score + gamesPlayed).
       endSession(gameSlug, score, level, stars);
+
+      // Sync gamesPlayed + high score into the auth profile (cross-store).
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser) {
+        const prevStats = currentUser.gameStats;
+        updateProfile({
+          gameStats: {
+            ...prevStats,
+            gamesPlayed: (prevStats.gamesPlayed ?? 0) + 1,
+            highScores: {
+              ...prevStats.highScores,
+              [gameSlug]: Math.max(prevStats.highScores[gameSlug] ?? 0, score),
+            },
+          },
+        });
+      }
     },
-    [gameSlug, addPaws, addGems, getHighScore, endSession],
+    [gameSlug, addPaws, addGems, getHighScore, endSession, updateProfile],
   );
 
   return {

@@ -1,9 +1,10 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import NyaLayout from "@/components/nya/NyaLayout";
 import GameGrid from "@/components/nya/GameGrid";
 import FeaturedBanner from "@/components/nya/FeaturedBanner";
-import { usePlayerStore } from "@/store/usePlayerStore";
+import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/useGameStore";
 import { SNAKE_GAME_META } from "@/games/snake/game.config";
 import type { GameMeta } from "@/types";
@@ -106,8 +107,14 @@ const games: GameMeta[] = [
 
 export default function HubScreen() {
   const navigate = useNavigate();
-  const { name } = usePlayerStore();
+  const { user, login } = useAuthStore();
   const highScores = useGameStore((s) => s.highScores);
+
+  // Auto-login on first load — initializes auth + economy stores so game
+  // rewards and purchases work even if the user plays directly from the hub.
+  useEffect(() => {
+    if (!user) login();
+  }, [user, login]);
 
   const featuredGames = games.filter((g) => g.isFeatured && !g.isComingSoon);
 
@@ -122,7 +129,7 @@ export default function HubScreen() {
         >
           <p className="text-muted-foreground text-sm">Welcome back,</p>
           <h2 className="font-heading font-bold text-xl text-foreground">
-            {name}! 🐾
+            {user?.pseudonym ?? "Nya Player"}! 🐾
           </h2>
         </motion.div>
 
