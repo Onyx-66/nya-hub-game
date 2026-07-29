@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { SnakeGameEngine, type Direction, type GameState } from "../logic/snakeEngine";
 import { renderSnake } from "./snakeRenderer";
@@ -32,6 +33,7 @@ export default function SnakeGame() {
   const [isPaused, setIsPaused] = useState(false);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
 
+  const navigate = useNavigate();
   const { onGameStart, onGameEnd, highScore } = useGameEconomy(GAME_ID);
   const highScoreRef = useRef(highScore);
   highScoreRef.current = highScore;
@@ -76,7 +78,8 @@ export default function SnakeGame() {
     engineRef.current = null;
     setGameState("idle");
     setIsPaused(false);
-  }, []);
+    navigate("/");
+  }, [navigate]);
 
   // ── Pause / Resume ──
   const togglePause = useCallback(() => {
