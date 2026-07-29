@@ -1,0 +1,1 @@
+# Place game assets (sprites, audio, fonts) here.

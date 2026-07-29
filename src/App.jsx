@@ -6,6 +6,12 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import Layout from '@/components/Layout';
+import HubPage from '@/features/hub/HubPage';
+import StorePage from '@/features/store/StorePage';
+import RankingPage from '@/features/ranking/RankingPage';
+import SettingsPage from '@/features/settings/SettingsPage';
+import GamePlayer from '@/games/GamePlayer';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -34,7 +40,13 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route element={<Layout />}>
+        <Route path="/" element={<HubPage />} />
+        <Route path="/store" element={<StorePage />} />
+        <Route path="/ranking" element={<RankingPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/games/:gameId" element={<GamePlayer />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
