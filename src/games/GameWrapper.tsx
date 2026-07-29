@@ -114,7 +114,7 @@ export default function GameWrapper() {
             This game is being crafted with love. Check back soon!
           </p>
         </div>
-        <NyaButton onClick={() => navigate("/")}>Back to Hub</NyaButton>
+        <NyaButton onClick={() => navigate("/hub")}>Back to Hub</NyaButton>
       </motion.div>
     </div>
   );

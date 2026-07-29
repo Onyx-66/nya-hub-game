@@ -6,13 +6,33 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import { useState, useEffect } from 'react';
+import LandingPage from '@/features/landing/LandingPage';
 import HubScreen from '@/features/hub/HubScreen';
 import ProfileScreen from '@/features/auth/ProfileScreen';
 import StoreScreen from '@/features/store/components/StoreScreen';
 import RankingsScreen from '@/features/rankings/components/RankingScreen';
 import GameWrapper from '@/games/GameWrapper';
 import SettingsScreen from '@/features/settings/components/SettingsScreen';
+import FriendsScreen from '@/features/friends/FriendsScreen';
+import LoginModal from '@/features/landing/LoginModal';
+import { useAuthStore } from '@/store/authStore';
 // Add page imports here
+
+function RequireAuth({ children }) {
+  const user = useAuthStore((s) => s.user);
+  const [showLogin, setShowLogin] = useState(false);
+
+  useEffect(() => {
+    if (!user) setShowLogin(true);
+  }, [user]);
+
+  if (!user) {
+    return <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onLogin={() => setShowLogin(false)} />;
+  }
+
+  return <>{children}</>;
+}
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -41,12 +61,14 @@ const AuthenticatedApp = () => {
   return (
     <div key={location.pathname} className="animate-page-enter">
       <Routes location={location}>
-        <Route path="/" element={<HubScreen />} />
-        <Route path="/profile" element={<ProfileScreen />} />
-        <Route path="/store" element={<StoreScreen />} />
-        <Route path="/rankings" element={<RankingsScreen />} />
-        <Route path="/settings" element={<SettingsScreen />} />
-        <Route path="/game/:slug" element={<GameWrapper />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/hub" element={<RequireAuth><HubScreen /></RequireAuth>} />
+        <Route path="/profile" element={<RequireAuth><ProfileScreen /></RequireAuth>} />
+        <Route path="/store" element={<RequireAuth><StoreScreen /></RequireAuth>} />
+        <Route path="/rankings" element={<RequireAuth><RankingsScreen /></RequireAuth>} />
+        <Route path="/friends" element={<RequireAuth><FriendsScreen /></RequireAuth>} />
+        <Route path="/settings" element={<RequireAuth><SettingsScreen /></RequireAuth>} />
+        <Route path="/game/:slug" element={<RequireAuth><GameWrapper /></RequireAuth>} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </div>

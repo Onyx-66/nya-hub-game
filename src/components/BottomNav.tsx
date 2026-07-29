@@ -1,11 +1,11 @@
-import { Home, ShoppingBag, Trophy, User, Settings } from "lucide-react";
+import { Home, ShoppingBag, Trophy, User, Users } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const items = [
-  { to: "/", label: "Games", icon: Home },
-  { to: "/store", label: "Store", icon: ShoppingBag },
+  { to: "/hub", label: "Games", icon: Home },
+  { to: "/friends", label: "Friends", icon: Users },
   { to: "/rankings", label: "Ranks", icon: Trophy },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/store", label: "Store", icon: ShoppingBag },
   { to: "/profile", label: "Profile", icon: User },
 ];
 
@@ -17,7 +17,6 @@ export default function BottomNav() {
           <NavLink
             key={to}
             to={to}
-            end={to === "/"}
             className={({ isActive }) =>
               `flex flex-col items-center gap-0.5 py-2 rounded-2xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 isActive

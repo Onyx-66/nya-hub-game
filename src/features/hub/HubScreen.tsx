@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import NyaLayout from "@/components/nya/NyaLayout";
@@ -88,14 +87,8 @@ const games: GameMeta[] = [
 
 export default function HubScreen() {
   const navigate = useNavigate();
-  const { user, login } = useAuthStore();
+  const { user } = useAuthStore();
   const highScores = useGameStore((s) => s.highScores);
-
-  // Auto-login on first load — initializes auth + economy stores so game
-  // rewards and purchases work even if the user plays directly from the hub.
-  useEffect(() => {
-    if (!user) login();
-  }, [user, login]);
 
   const featuredGames = games.filter((g) => g.isFeatured && !g.isComingSoon);
 

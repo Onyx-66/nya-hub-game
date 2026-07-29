@@ -104,6 +104,12 @@ export interface UserProfile {
   totalGems: number;
   gameStats: GameStats;
   preferences: UserPreferences;
+  bio: string;
+  bannerId: string | null;
+  customAvatarUrl: string | null;
+  title: string | null;
+  titles: string[];
+  joinedDate: string;
 }
 
 // =============================================

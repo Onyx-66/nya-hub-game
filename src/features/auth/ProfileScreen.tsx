@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -17,15 +17,11 @@ import { useEconomyStore } from "@/store/economyStore";
 
 export default function ProfileScreen() {
   const navigate = useNavigate();
-  const { user, login, logout, updateProfile } = useAuthStore();
+  const { user, logout, changePseudonym } = useAuthStore();
   const { paws, gems } = useEconomyStore();
+  const [nameError, setNameError] = useState("");
   const [showNameModal, setShowNameModal] = useState(false);
   const [newName, setNewName] = useState("");
-
-  // Auto-login if no session exists (mock auth)
-  useEffect(() => {
-    if (!user) login();
-  }, [user, login]);
 
   if (!user) {
     return (
@@ -43,10 +39,13 @@ export default function ProfileScreen() {
   );
 
   const handleSaveName = () => {
-    if (newName.trim()) {
-      updateProfile({ pseudonym: newName.trim() });
+    const ok = changePseudonym(newName.trim());
+    if (ok) {
       setShowNameModal(false);
       setNewName("");
+      setNameError("");
+    } else {
+      setNameError("That name is already taken");
     }
   };
 
@@ -165,18 +164,24 @@ export default function ProfileScreen() {
       >
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Pick a new name for your cat persona! 🐱
+            Pick a new name for your cat persona!
           </p>
           <input
             type="text"
             value={newName}
-            onChange={(e) => setNewName(e.target.value)}
+            onChange={(e) => {
+              setNewName(e.target.value);
+              setNameError("");
+            }}
             maxLength={20}
             placeholder="Enter new pseudonym..."
             className="w-full bg-muted/50 rounded-2xl px-4 py-3 text-foreground font-heading font-semibold outline-none border border-border/50 focus:border-primary transition-colors"
             onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
             autoFocus
           />
+          {nameError && (
+            <p className="text-xs text-red-400 mt-1">{nameError}</p>
+          )}
           <div className="flex gap-3">
             <NyaButton
               fullWidth
