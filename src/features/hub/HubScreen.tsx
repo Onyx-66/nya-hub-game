@@ -8,6 +8,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/useGameStore";
 import { SNAKE_GAME_META } from "@/games/snake/game.config";
 import { BLOCK_BLAST_META } from "@/games/block-blast/game.config";
+import { NYA_CRUSH_META } from "@/games/candy-crush/game.config";
 import type { GameMeta } from "@/types";
 
 /** Placeholder games for the hub — uses the GameMeta type */
@@ -79,21 +80,7 @@ const games: GameMeta[] = [
     displayName: "Sword of Knowledge",
   },
   { ...BLOCK_BLAST_META, isComingSoon: true },
-  {
-    id: "nya-crush",
-    slug: "nya-crush",
-    name: { en: "Nya Crush", ar: "نيّا كراش" },
-    description: {
-      en: "Match three candies, win big!",
-      ar: "طابق ثلاث حلويات، اربح كبيراً!",
-    },
-    icon: "",
-    iconPath: "lucide:Gem",
-    primaryColor: "#F472B6",
-    difficulty: "easy",
-    category: "puzzle",
-    isComingSoon: true,
-  },
+  NYA_CRUSH_META,
   {
     id: "coloring-book",
     slug: "coloring-book",
