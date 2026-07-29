@@ -197,15 +197,13 @@ export default function RankingScreen() {
             />
 
             {/* ── Refresh ── */}
-            {scope !== "friends" && (
-              <button
-                onClick={refresh}
-                disabled={isRefreshing}
-                className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
-              >
-                {isRefreshing ? "Refreshing..." : "Tap to refresh"}
-              </button>
-            )}
+            <button
+              onClick={refresh}
+              disabled={isRefreshing}
+              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
+            >
+              {isRefreshing ? "Refreshing..." : "Tap to refresh"}
+            </button>
           </>
         )}
       </div>
