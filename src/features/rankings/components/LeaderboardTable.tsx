@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Loader2 } from "lucide-react";
-import { getAvatar, type RankEntry } from "@/services/leaderboardData";
+import { type RankEntry } from "@/services/leaderboardData";
+import CatAvatar from "@/components/nya/CatAvatar";
 
 interface LeaderboardTableProps {
   entries: RankEntry[]; // already ranked, top 3 excluded by parent
@@ -71,8 +72,8 @@ export default function LeaderboardTable({
               <span className="w-8 text-center font-bold text-muted-foreground text-sm shrink-0">
                 #{rank}
               </span>
-              <span className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-base shrink-0">
-                {getAvatar(entry.avatarId)}
+              <span className="shrink-0">
+                <CatAvatar avatarId={entry.avatarId} size={32} />
               </span>
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-semibold text-foreground block truncate">
@@ -84,7 +85,7 @@ export default function LeaderboardTable({
                   )}
                 </span>
                 <span className="text-[10px] text-muted-foreground">
-                  {entry.country.flag} {entry.country.name}
+                  <span className="text-[9px] font-bold bg-muted px-1.5 py-0.5 rounded text-muted-foreground mr-1">{entry.country.code}</span>{entry.country.name}
                 </span>
               </div>
               <span className="flex items-center gap-1 text-sm font-bold text-foreground shrink-0">
@@ -113,8 +114,8 @@ export default function LeaderboardTable({
               <span className="w-8 text-center font-bold text-primary text-sm shrink-0">
                 #{userEntry.rank}
               </span>
-              <span className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-base shrink-0">
-                {getAvatar(userEntry.avatarId)}
+              <span className="shrink-0">
+                <CatAvatar avatarId={userEntry.avatarId} size={32} />
               </span>
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-semibold text-foreground block truncate">
@@ -124,7 +125,7 @@ export default function LeaderboardTable({
                   </span>
                 </span>
                 <span className="text-[10px] text-muted-foreground">
-                  {userEntry.country.flag} {userEntry.country.name}
+                  <span className="text-[9px] font-bold bg-muted px-1.5 py-0.5 rounded text-muted-foreground mr-1">{userEntry.country.code}</span>{userEntry.country.name}
                 </span>
               </div>
               <span className="flex items-center gap-1 text-sm font-bold text-foreground shrink-0">

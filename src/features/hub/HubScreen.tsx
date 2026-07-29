@@ -10,6 +10,7 @@ import { SNAKE_GAME_META } from "@/games/snake/game.config";
 import { BLOCK_BLAST_META } from "@/games/block-blast/game.config";
 import { NYA_CRUSH_META } from "@/games/candy-crush/game.config";
 import { COLORING_META } from "@/games/coloring/game.config";
+import DailyBonus from "@/components/nya/DailyBonus";
 import type { GameMeta } from "@/types";
 
 /** Placeholder games for the hub — uses the GameMeta type */
@@ -138,6 +139,9 @@ export default function HubScreen() {
           />
         </div>
       </div>
+
+      {/* Daily bonus popup — shows on first app open each day */}
+      <DailyBonus />
     </NyaLayout>
   );
 }

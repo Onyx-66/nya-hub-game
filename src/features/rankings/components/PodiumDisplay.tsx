@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Crown } from "lucide-react";
-import { getAvatar, type RankEntry } from "@/services/leaderboardData";
+import { type RankEntry } from "@/services/leaderboardData";
+import CatAvatar from "@/components/nya/CatAvatar";
 
 interface PodiumDisplayProps {
   podium: RankEntry[]; // [1st, 2nd, 3rd] in rank order
@@ -114,9 +115,7 @@ export default function PodiumDisplay({ podium }: PodiumDisplayProps) {
                   entry.isYou ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
                 }`}
               >
-                <span className={cfg.avatarText}>
-                  {getAvatar(entry.avatarId)}
-                </span>
+                <CatAvatar avatarId={entry.avatarId} size={placeIdx === 0 ? 56 : 44} />
               </div>
               {entry.isYou && (
                 <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">

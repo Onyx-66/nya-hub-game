@@ -6,6 +6,7 @@ import { useEconomyStore } from "@/store/economyStore";
 import { useAuthStore } from "@/store/authStore";
 import StoreItemCard, { type PurchaseStatus } from "./StoreItemCard";
 import PurchaseModal from "./PurchaseModal";
+import FreeRewardsSection from "@/components/nya/FreeRewardsSection";
 import {
   POWERUP_ITEMS,
   CURRENCY_ITEMS,
@@ -13,6 +14,7 @@ import {
   type StoreItem,
   type StoreTab,
 } from "./storeCatalog";
+import { paymentService } from "@/services/paymentService";
 
 const TABS: { id: StoreTab; label: string }[] = [
   { id: "powerups", label: "Powerups" },
@@ -41,9 +43,39 @@ export default function StoreScreen() {
   const setCard = (itemId: string, status: PurchaseStatus) =>
     setCardStatus({ itemId, status });
 
+  const handleRealMoneyPurchase = async (item: StoreItem) => {
+    // When Stripe/Google Play Billing is integrated:
+    // 1. Call payment processor via paymentService
+    // 2. Verify receipt with backend
+    // 3. Grant items via economyStore
+    // For now: attempt through paymentService (returns false — not configured)
+    const result = await paymentService.purchase(item.id);
+    if (result.success && item.grant) {
+      if (item.grant.currency === "gems") addGems(item.grant.amount);
+      else addPaws(item.grant.amount, `Purchased ${item.name}`);
+      setCard(item.id, "success");
+      setTimeout(() => setCard(item.id, "idle"), 800);
+    } else {
+      setError("Payments coming soon — stay tuned!");
+      setCard(item.id, "error");
+      setTimeout(() => setCard(item.id, "idle"), 900);
+    }
+    setSelectedItem(null);
+    setLoading(false);
+  };
+
   const handleConfirm = () => {
     if (!selectedItem) return;
     const item = selectedItem;
+
+    // Real-money items route through paymentService
+    if (item.currency === "real") {
+      setLoading(true);
+      setError(null);
+      handleRealMoneyPurchase(item);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -91,6 +123,11 @@ export default function StoreScreen() {
 
   return (
     <NyaLayout title="Store" showBack={false}>
+      {/* ── Free Rewards (rewarded ads) ── */}
+      <div className="mb-6">
+        <FreeRewardsSection />
+      </div>
+
       {/* ── Tab switcher ── */}
       <div className="flex gap-1 bg-muted/60 p-1 rounded-2xl mb-6">
         {TABS.map((tab) => (

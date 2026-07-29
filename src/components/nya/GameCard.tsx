@@ -4,6 +4,7 @@ import { Lock, Play, Star, Sparkles, PawPrint, Feather, Sword, LayoutGrid, Dropl
 import type { ComponentType, CSSProperties } from "react";
 import type { GameMeta } from "@/types";
 import { scoreToStars } from "@/hooks/useGameEconomy";
+import DifficultyDots from "@/components/nya/DifficultyDots";
 
 interface GameCardProps {
   game: GameMeta;
@@ -14,14 +15,15 @@ interface GameCardProps {
 
 type IconComp = ComponentType<{ className?: string; style?: CSSProperties }>;
 
-const LUCIDE_ICONS: Record<string, IconComp> = {
-  Feather,
-  Sword,
-  LayoutGrid,
-  Droplet,
-  Gem,
-  Palette,
-  PaintBucket,
+const GAME_SLUG_ICONS: Record<string, IconComp> = {
+  snake: Droplet,
+  "water-sort": PaintBucket,
+  meowdoku: LayoutGrid,
+  "angry-birds": Feather,
+  "quiz-sword": Sword,
+  "block-blast": LayoutGrid,
+  "candy-crush": Gem,
+  coloring: Palette,
 };
 
 /** Pastel gradient per category */
@@ -34,21 +36,22 @@ const categoryGradients: Record<string, string> = {
   idle: "from-amber-400 to-orange-500",
 };
 
-/** Colored dot for each difficulty level */
-const difficultyDots: Record<string, string> = {
-  easy: "bg-emerald-400",
-  medium: "bg-amber-400",
-  hard: "bg-rose-500",
-};
-
 function GameIcon({ game }: { game: GameMeta }) {
   const [imgError, setImgError] = useState(false);
   const { iconPath, primaryColor } = game;
 
-  // Lucide icon
+  // Lucide icon — lookup by game slug (reliable) with iconPath fallback
+  const SlugIcon = GAME_SLUG_ICONS[game.slug];
+  if (SlugIcon) {
+    return (
+      <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+        <SlugIcon className="w-12 h-12" style={{ color: primaryColor ?? "#ffffff" }} />
+      </div>
+    );
+  }
   if (iconPath?.startsWith("lucide:")) {
     const name = iconPath.slice(6);
-    const Icon = LUCIDE_ICONS[name];
+    const Icon = GAME_SLUG_ICONS[name];
     if (Icon) {
       return (
         <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
@@ -142,18 +145,7 @@ export default function GameCard({ game, index = 0, highScore, onPlay }: GameCar
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center gap-2">
               {/* difficulty dots */}
-              <div className="flex items-center gap-1">
-                {["easy", "medium", "hard"].map((lvl) => (
-                  <span
-                    key={lvl}
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      game.difficulty === lvl
-                        ? difficultyDots[lvl]
-                        : "bg-white/20"
-                    }`}
-                  />
-                ))}
-              </div>
+              <DifficultyDots difficulty={game.difficulty} variant="light" />
               <span className="text-[11px] text-white/80 capitalize">
                 {game.difficulty}
               </span>
