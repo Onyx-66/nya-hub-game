@@ -7,12 +7,13 @@ import BottomNav from "@/components/BottomNav";
 
 interface NyaLayoutProps {
   children: ReactNode;
-  /** Show the back button. Defaults to true. */
   showBack?: boolean;
-  /** Optional title shown in the top bar. */
   title?: string;
-  /** Called when back is pressed. Defaults to browser history back. */
   onBack?: () => void;
+  /** Hide the bottom navigation bar. */
+  hideNav?: boolean;
+  /** Compact mode: no scroll, minimal padding, fills viewport height. */
+  compact?: boolean;
 }
 
 /**
@@ -25,6 +26,8 @@ export default function NyaLayout({
   showBack = true,
   title,
   onBack,
+  hideNav = false,
+  compact = false,
 }: NyaLayoutProps) {
   const navigate = useNavigate();
 
@@ -34,9 +37,13 @@ export default function NyaLayout({
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div
+      className={`bg-background flex flex-col ${
+        compact ? "h-[100dvh] overflow-hidden" : "min-h-screen"
+      }`}
+    >
       {/* ── Top Bar ── */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 shrink-0">
         <div className="max-w-md md:max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           {showBack && (
             <button
@@ -66,14 +73,21 @@ export default function NyaLayout({
       </header>
 
       {/* ── Scrollable Content ── */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-md md:max-w-2xl mx-auto px-4 py-5 pb-28">
+      <main
+        className={`flex-1 ${
+          compact ? "overflow-hidden min-h-0" : "overflow-y-auto"
+        }`}
+      >
+        <div
+          className={`max-w-md md:max-w-2xl mx-auto ${
+            compact ? "px-3 py-2 h-full" : "px-4 py-5 pb-28"
+          }`}
+        >
           {children}
         </div>
       </main>
 
-      {/* ── Bottom Navigation ── */}
-      <BottomNav />
+      {!hideNav && <BottomNav />}
     </div>
   );
 }

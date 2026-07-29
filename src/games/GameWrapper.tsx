@@ -69,8 +69,8 @@ export default function GameWrapper() {
   if (entry) {
     const { Component, name } = entry;
     return (
-      <NyaLayout title={name}>
-        <div className="relative min-h-[60vh]">
+      <NyaLayout title={name} hideNav={slug === "snake"} compact={slug === "snake"}>
+        <div className={`relative ${slug === "snake" ? "h-full" : "min-h-[60vh]"}`}>
           <Component />
           <AnimatePresence>
             {loading && (

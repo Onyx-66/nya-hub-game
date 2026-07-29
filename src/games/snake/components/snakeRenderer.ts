@@ -1,7 +1,6 @@
 // =============================================
-// snakeRenderer — Pure canvas drawing for the Snake game.
-// Supports smooth interpolation between grid cells, eat-pulse
-// animation, and the existing cat-themed visuals.
+// snakeRenderer — Enhanced canvas drawing.
+// Connected tapered body, glow, cat face, improved food.
 // =============================================
 
 import type { Direction, SnakeSegment } from "../logic/snakeEngine";
@@ -12,13 +11,8 @@ const HEAD_RGB: [number, number, number] = [255, 107, 157]; // #FF6B9D
 const TAIL_RGB: [number, number, number] = [192, 132, 252]; // #C084FC
 const FOOD_COLOR = "#FDE047";
 const FOOD_EYE = "#1a1a2e";
-
-const DIRECTION_VECTORS: Record<Direction, { x: number; y: number }> = {
-  UP: { x: 0, y: -1 },
-  DOWN: { x: 0, y: 1 },
-  LEFT: { x: -1, y: 0 },
-  RIGHT: { x: 1, y: 0 },
-};
+const GLOW_COLOR = "rgba(255, 107, 157, 0.12)";
+const FOOD_GLOW = "rgba(253, 224, 71, 0.15)";
 
 const DIR_ANGLE: Record<Direction, number> = {
   RIGHT: 0,
@@ -34,8 +28,8 @@ export interface RenderState {
   gridWidth: number;
   gridHeight: number;
   prevTail: SnakeSegment | null;
-  tickProgress: number; // 0-1 interpolation between ticks
-  eatPulse: number; // 0-1 head scale boost after eating
+  tickProgress: number;
+  eatPulse: number;
 }
 
 function lerp(a: number, b: number, t: number): number {
@@ -49,47 +43,65 @@ function lerpColor(a: [number, number, number], b: [number, number, number], t: 
   return `rgb(${r},${g},${bl})`;
 }
 
-function roundRectPath(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number,
-) {
-  const rad = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + rad, y);
-  ctx.arcTo(x + w, y, x + w, y + h, rad);
-  ctx.arcTo(x + w, y + h, x, y + h, rad);
-  ctx.arcTo(x, y + h, x, y, rad);
-  ctx.arcTo(x, y, x + w, y, rad);
-  ctx.closePath();
+function rgbStr(rgb: [number, number, number], alpha = 1): string {
+  return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
 }
 
-function drawBackground(ctx: CanvasRenderingContext2D, width: number, height: number) {
+/** Returns interpolated pixel positions for each snake segment. */
+function getInterpolatedPoints(
+  snake: SnakeSegment[],
+  prevTail: SnakeSegment | null,
+  tickProgress: number,
+  cell: number,
+): { x: number; y: number }[] {
+  const n = snake.length;
+  const p = tickProgress;
+  const pts: { x: number; y: number }[] = [];
+
+  for (let i = 0; i < n; i++) {
+    const seg = snake[i];
+    let rx: number, ry: number;
+
+    if (i < n - 1) {
+      const behind = snake[i + 1];
+      rx = lerp(behind.x, seg.x, p);
+      ry = lerp(behind.y, seg.y, p);
+    } else if (prevTail) {
+      rx = lerp(prevTail.x, seg.x, p);
+      ry = lerp(prevTail.y, seg.y, p);
+    } else {
+      rx = seg.x;
+      ry = seg.y;
+    }
+
+    pts.push({ x: rx * cell + cell / 2, y: ry * cell + cell / 2 });
+  }
+  return pts;
+}
+
+function drawBackground(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.fillStyle = BG_COLOR;
-  ctx.fillRect(0, 0, width, height);
+  ctx.fillRect(0, 0, w, h);
 }
 
 function drawGrid(
   ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
+  w: number,
+  h: number,
   cell: number,
-  gridW: number,
-  gridH: number,
+  gw: number,
+  gh: number,
 ) {
   ctx.strokeStyle = GRID_COLOR;
   ctx.lineWidth = 0.5;
   ctx.beginPath();
-  for (let x = 0; x <= gridW; x++) {
+  for (let x = 0; x <= gw; x++) {
     ctx.moveTo(x * cell, 0);
-    ctx.lineTo(x * cell, height);
+    ctx.lineTo(x * cell, h);
   }
-  for (let y = 0; y <= gridH; y++) {
+  for (let y = 0; y <= gh; y++) {
     ctx.moveTo(0, y * cell);
-    ctx.lineTo(width, y * cell);
+    ctx.lineTo(w, y * cell);
   }
   ctx.stroke();
 }
@@ -101,16 +113,15 @@ function drawSparkles(
   cell: number,
   frame: number,
 ) {
-  const count = 4;
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < 4; i++) {
     const angle = frame * 0.05 + (i * Math.PI) / 2;
-    const dist = cell * 0.55 + Math.sin(frame * 0.1 + i) * cell * 0.08;
+    const dist = cell * 0.6 + Math.sin(frame * 0.1 + i) * cell * 0.08;
     const sx = cx + Math.cos(angle) * dist;
     const sy = cy + Math.sin(angle) * dist;
-    const alpha = 0.25 + 0.3 * Math.sin(frame * 0.15 + i);
+    const alpha = 0.2 + 0.25 * Math.sin(frame * 0.15 + i);
     ctx.fillStyle = `rgba(253,224,71,${Math.max(0, alpha)})`;
     ctx.beginPath();
-    ctx.arc(sx, sy, cell * 0.06, 0, Math.PI * 2);
+    ctx.arc(sx, sy, cell * 0.05, 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -121,31 +132,42 @@ function drawFood(
   cell: number,
   frame: number,
 ) {
-  const bob = Math.sin(frame * 0.12) * cell * 0.08;
+  const bob = Math.sin(frame * 0.12) * cell * 0.06;
   const cx = food.x * cell + cell / 2;
   const cy = food.y * cell + cell / 2 + bob;
-  const r = cell * 0.32;
+  const r = cell * 0.30;
 
   drawSparkles(ctx, cx, cy, cell, frame);
 
-  // Fish body
-  ctx.fillStyle = FOOD_COLOR;
+  // Glow
+  ctx.fillStyle = FOOD_GLOW;
   ctx.beginPath();
-  ctx.ellipse(cx, cy, r, r * 0.7, 0, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r * 1.8, 0, Math.PI * 2);
   ctx.fill();
 
-  // Tail
+  // Body
+  ctx.fillStyle = FOOD_COLOR;
   ctx.beginPath();
-  ctx.moveTo(cx - r * 0.9, cy);
-  ctx.lineTo(cx - r * 1.6, cy - r * 0.55);
-  ctx.lineTo(cx - r * 1.6, cy + r * 0.55);
+  ctx.ellipse(cx, cy, r, r * 0.72, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tail fin
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.85, cy);
+  ctx.lineTo(cx - r * 1.5, cy - r * 0.5);
+  ctx.lineTo(cx - r * 1.5, cy + r * 0.5);
   ctx.closePath();
   ctx.fill();
 
   // Eye
   ctx.fillStyle = FOOD_EYE;
   ctx.beginPath();
-  ctx.arc(cx + r * 0.4, cy - r * 0.18, r * 0.13, 0, Math.PI * 2);
+  ctx.arc(cx + r * 0.35, cy - r * 0.15, r * 0.14, 0, Math.PI * 2);
+  ctx.fill();
+  // Eye highlight
+  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  ctx.beginPath();
+  ctx.arc(cx + r * 0.4, cy - r * 0.2, r * 0.05, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -161,76 +183,77 @@ function drawCatHead(
   ctx.rotate(DIR_ANGLE[direction]);
   const s = size;
 
-  // Ears (two triangles on top)
+  // Ears
   ctx.fillStyle = "#FF6B9D";
   ctx.beginPath();
-  ctx.moveTo(-s * 0.35, -s * 0.3);
+  ctx.moveTo(-s * 0.38, -s * 0.28);
   ctx.lineTo(-s * 0.22, -s * 0.55);
-  ctx.lineTo(-s * 0.08, -s * 0.3);
+  ctx.lineTo(-s * 0.06, -s * 0.28);
   ctx.closePath();
   ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(s * 0.08, -s * 0.3);
+  ctx.moveTo(s * 0.06, -s * 0.28);
   ctx.lineTo(s * 0.22, -s * 0.55);
-  ctx.lineTo(s * 0.35, -s * 0.3);
+  ctx.lineTo(s * 0.38, -s * 0.28);
   ctx.closePath();
   ctx.fill();
 
-  // Eyes (looking forward)
-  ctx.fillStyle = "#1a1a2e";
+  // Inner ears
+  ctx.fillStyle = "rgba(255,200,220,0.5)";
   ctx.beginPath();
-  ctx.arc(s * 0.12, -s * 0.1, s * 0.07, 0, Math.PI * 2);
+  ctx.moveTo(-s * 0.3, -s * 0.3);
+  ctx.lineTo(-s * 0.22, -s * 0.45);
+  ctx.lineTo(-s * 0.14, -s * 0.3);
+  ctx.closePath();
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(s * 0.12, s * 0.1, s * 0.07, 0, Math.PI * 2);
+  ctx.moveTo(s * 0.14, -s * 0.3);
+  ctx.lineTo(s * 0.22, -s * 0.45);
+  ctx.lineTo(s * 0.3, -s * 0.3);
+  ctx.closePath();
+  ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = "#1a1a2e";
+  ctx.beginPath();
+  ctx.arc(s * 0.14, -s * 0.08, s * 0.08, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(s * 0.14, s * 0.08, s * 0.08, 0, Math.PI * 2);
+  ctx.fill();
+  // Eye shines
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.beginPath();
+  ctx.arc(s * 0.17, -s * 0.11, s * 0.03, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(s * 0.17, s * 0.05, s * 0.03, 0, Math.PI * 2);
   ctx.fill();
 
   // Whiskers
-  ctx.strokeStyle = "rgba(255,255,255,0.55)";
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(255,255,255,0.45)";
+  ctx.lineWidth = 1.2;
   ctx.beginPath();
-  ctx.moveTo(s * 0.18, -s * 0.05);
-  ctx.lineTo(s * 0.45, -s * 0.15);
-  ctx.moveTo(s * 0.18, -s * 0.05);
-  ctx.lineTo(s * 0.45, 0);
-  ctx.moveTo(s * 0.18, s * 0.05);
-  ctx.lineTo(s * 0.45, s * 0.15);
-  ctx.moveTo(s * 0.18, s * 0.05);
-  ctx.lineTo(s * 0.45, 0);
+  ctx.moveTo(s * 0.2, -s * 0.04);
+  ctx.lineTo(s * 0.48, -s * 0.14);
+  ctx.moveTo(s * 0.2, 0);
+  ctx.lineTo(s * 0.5, 0);
+  ctx.moveTo(s * 0.2, s * 0.04);
+  ctx.lineTo(s * 0.48, s * 0.14);
   ctx.stroke();
+
+  // Nose
+  ctx.fillStyle = "rgba(255,180,200,0.8)";
+  ctx.beginPath();
+  ctx.arc(s * 0.32, 0, s * 0.04, 0, Math.PI * 2);
+  ctx.fill();
 
   ctx.restore();
 }
 
-function drawDirectionIndicator(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  cell: number,
-  direction: Direction,
-) {
-  const s = cell * 0.12;
-  const vec = DIRECTION_VECTORS[direction];
-  ctx.fillStyle = "rgba(255,255,255,0.3)";
-  const tipX = cx + vec.x * s;
-  const tipY = cy + vec.y * s;
-  const baseX = cx - vec.x * s * 0.5;
-  const baseY = cy - vec.y * s * 0.5;
-  const px = -vec.y * s * 0.6;
-  const py = vec.x * s * 0.6;
-  ctx.beginPath();
-  ctx.moveTo(tipX, tipY);
-  ctx.lineTo(baseX + px, baseY + py);
-  ctx.lineTo(baseX - px, baseY - py);
-  ctx.closePath();
-  ctx.fill();
-}
-
 /**
- * Draws the snake with smooth interpolation between tick positions.
- * Each segment slides from the position behind it toward its own position,
- * creating a continuous gliding effect. The tail retracts from its old
- * position (prevTail) toward the new last segment.
+ * Draws the snake as a smooth, connected, tapering body with a glow
+ * underneath and a cat face on the head.
  */
 function drawSnake(
   ctx: CanvasRenderingContext2D,
@@ -242,57 +265,59 @@ function drawSnake(
   tickProgress: number,
   eatPulse: number,
 ) {
-  const n = snake.length;
-  const p = tickProgress;
+  const pts = getInterpolatedPoints(snake, prevTail, tickProgress, cell);
+  if (pts.length === 0) return;
+  const n = pts.length;
 
-  // Draw tail-first so head renders on top.
-  for (let i = n - 1; i >= 0; i--) {
-    const seg = snake[i];
+  // ── 1. Glow: semi-transparent wide line behind body ──
+  ctx.strokeStyle = GLOW_COLOR;
+  ctx.lineWidth = cell * 0.95;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < n; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.stroke();
 
-    // Compute interpolated render position.
-    let rx: number, ry: number;
-
-    if (i < n - 1) {
-      // Head and body: slide from the segment behind toward own position.
-      const behind = snake[i + 1];
-      rx = lerp(behind.x, seg.x, p);
-      ry = lerp(behind.y, seg.y, p);
-    } else {
-      // Tail: retract from prevTail toward own position.
-      if (prevTail) {
-        rx = lerp(prevTail.x, seg.x, p);
-        ry = lerp(prevTail.y, seg.y, p);
-      } else {
-        rx = seg.x;
-        ry = seg.y;
-      }
-    }
-
-    const cx = rx * cell + cell / 2;
-    const cy = ry * cell + cell / 2;
-
-    const t = n > 1 ? i / (n - 1) : 0;
-    const color = lerpColor(HEAD_RGB, TAIL_RGB, t);
-
-    // Head gets eat-pulse scale boost; body gets subtle breathing pulse.
-    let pulse: number;
-    if (i === 0) {
-      pulse = 1 + eatPulse * 0.18;
-    } else {
-      pulse = 1 + Math.sin(frame * 0.2 + i) * 0.04 * (i % 2 === 0 ? 1 : -1);
-    }
-    const sz = cell * 0.86 * pulse;
-
-    ctx.fillStyle = color;
-    roundRectPath(ctx, cx - sz / 2, cy - sz / 2, sz, sz, cell * 0.25);
-    ctx.fill();
-
-    if (i === 0) {
-      drawCatHead(ctx, cx, cy, sz, direction);
-    } else {
-      drawDirectionIndicator(ctx, cx, cy, cell, direction);
-    }
+  // ── 2. Body: tapered segments, each with its own color/width ──
+  // Draw tail-first so head is on top.
+  for (let i = n - 1; i >= 1; i--) {
+    const t = (i - 1) / Math.max(1, n - 2);
+    const width = cell * (0.78 - t * 0.16);
+    ctx.strokeStyle = lerpColor(HEAD_RGB, TAIL_RGB, t);
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
+    ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
   }
+
+  // ── 3. Smooth body joints: circles at each point ──
+  for (let i = n - 1; i >= 1; i--) {
+    const t = (i - 1) / Math.max(1, n - 2);
+    const radius = cell * (0.39 - t * 0.08);
+    ctx.fillStyle = lerpColor(HEAD_RGB, TAIL_RGB, t);
+    ctx.beginPath();
+    ctx.arc(pts[i].x, pts[i].y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ── 4. Head: larger circle with cat face ──
+  const headR = cell * 0.44 * (1 + eatPulse * 0.18);
+  ctx.fillStyle = rgbStr(HEAD_RGB);
+  ctx.beginPath();
+  ctx.arc(pts[0].x, pts[0].y, headR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Subtle head highlight
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.beginPath();
+  ctx.arc(pts[0].x - headR * 0.25, pts[0].y - headR * 0.25, headR * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  drawCatHead(ctx, pts[0].x, pts[0].y, headR * 2, direction);
 }
 
 export function renderSnake(
