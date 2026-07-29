@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -11,10 +11,12 @@ import ProfileScreen from '@/features/auth/ProfileScreen';
 import StoreScreen from '@/features/store/components/StoreScreen';
 import RankingsScreen from '@/features/rankings/components/RankingScreen';
 import GameWrapper from '@/games/GameWrapper';
+import SettingsScreen from '@/features/settings/components/SettingsScreen';
 // Add page imports here
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const location = useLocation();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -36,16 +38,18 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render the main app
   return (
-    <Routes>
-      <Route path="/" element={<HubScreen />} />
-      <Route path="/profile" element={<ProfileScreen />} />
-      <Route path="/store" element={<StoreScreen />} />
-      <Route path="/rankings" element={<RankingsScreen />} />
-      <Route path="/game/:slug" element={<GameWrapper />} />
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <div key={location.pathname} className="animate-page-enter">
+      <Routes location={location}>
+        <Route path="/" element={<HubScreen />} />
+        <Route path="/profile" element={<ProfileScreen />} />
+        <Route path="/store" element={<StoreScreen />} />
+        <Route path="/rankings" element={<RankingsScreen />} />
+        <Route path="/settings" element={<SettingsScreen />} />
+        <Route path="/game/:slug" element={<GameWrapper />} />
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </div>
   );
 };
 

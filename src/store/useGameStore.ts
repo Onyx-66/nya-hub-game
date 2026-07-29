@@ -10,6 +10,7 @@ interface GameState {
   startGameSession: (slug: string) => void;
   endGameSession: (slug: string, score: number, level: number, stars: number) => void;
   getHighScore: (slug: string) => number;
+  clearGameData: () => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -43,6 +44,9 @@ export const useGameStore = create<GameState>()(
         })),
 
       getHighScore: (slug) => get().highScores[slug] ?? 0,
+
+      clearGameData: () =>
+        set({ currentGameId: null, highScores: {}, gamesPlayed: 0 }),
     }),
     { name: "nya-hub-games" }
   )

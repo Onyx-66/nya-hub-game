@@ -33,7 +33,7 @@ export default function GameCard({ game, index = 0, highScore, onPlay }: GameCar
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.4, ease: "easeOut" }}
+      transition={{ delay: index * 0.05, duration: 0.4, ease: "easeOut" }}
       className="relative"
     >
       <div
