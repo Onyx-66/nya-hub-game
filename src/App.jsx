@@ -9,7 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 import HubScreen from '@/features/hub/HubScreen';
 import ProfileScreen from '@/features/auth/ProfileScreen';
 import StoreScreen from '@/features/store/components/StoreScreen';
-import RankingsScreen from '@/features/ranking/RankingsScreen';
+import RankingsScreen from '@/features/rankings/components/RankingScreen';
 import GameWrapper from '@/games/GameWrapper';
 // Add page imports here
 
