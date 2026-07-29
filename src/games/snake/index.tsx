@@ -1,4 +1,4 @@
-import SnakeCanvas from "./components/SnakeCanvas";
+import SnakeGameView from "./components/SnakeGame";
 import { SNAKE_META } from "./game.config";
 
 /**
@@ -17,7 +17,7 @@ export default function SnakeGame() {
           {SNAKE_META.description.en}
         </p>
       </div>
-      <SnakeCanvas />
+      <SnakeGameView />
     </div>
   );
 }
