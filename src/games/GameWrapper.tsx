@@ -12,6 +12,8 @@ import WaterSortGameWrapper from "@/games/water-sort";
 import { WATER_SORT_META } from "@/games/water-sort/game.config";
 import MeowdokuGameWrapper from "@/games/meowdoku";
 import { MEOWDOKU_META } from "@/games/meowdoku/game.config";
+import FuriousFelinesGameWrapper from "@/games/angry-birds";
+import { ANGRY_BIRDS_META } from "@/games/angry-birds/game.config";
 
 interface GameEntry {
   name: string;
@@ -23,6 +25,7 @@ const GAME_ENTRIES: Record<string, GameEntry> = {
   "block-blast": { name: BLOCK_BLAST_META.displayName ?? "Block Blast", Component: BlockBlastGameWrapper },
   "water-sort": { name: WATER_SORT_META.displayName ?? "Water Sort", Component: WaterSortGameWrapper },
   meowdoku: { name: MEOWDOKU_META.displayName ?? "Meowdoku", Component: MeowdokuGameWrapper },
+  "angry-birds": { name: ANGRY_BIRDS_META.displayName ?? "Furious Felines", Component: FuriousFelinesGameWrapper },
 };
 
 function GameLoadingScreen({ name }: { name: string }) {
