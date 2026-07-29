@@ -1,8 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Pause,
+  Play,
+  Volume2,
+  VolumeX,
+  Trophy,
+  Star,
+  Droplet,
+} from "lucide-react";
 import { SnakeGameEngine, type Direction, type GameState } from "../logic/snakeEngine";
 import { renderSnake } from "./snakeRenderer";
+import { SoundManager } from "../utils/soundManager";
 import { useGameEconomy, scoreToStars } from "@/hooks/useGameEconomy";
 
 // =============================================
@@ -11,10 +25,13 @@ import { useGameEconomy, scoreToStars } from "@/hooks/useGameEconomy";
 
 const GRID_W = 20;
 const GRID_H = 20;
-const CANVAS_SIZE = 400; // internal resolution (square)
-const INITIAL_SPEED = 150;
-const SWIPE_THRESHOLD = 30;
+const CANVAS_SIZE = 400;
+const INITIAL_SPEED = 180;
+const SWIPE_THRESHOLD = 25;
+const INPUT_COOLDOWN = 50; // ms — filters accidental double-taps
 const GAME_ID = "snake";
+const COUNTDOWN_STEP_MS = 650;
+const MUTE_KEY = "snake_muted";
 
 // =============================================
 // Component
@@ -26,17 +43,61 @@ export default function SnakeGame() {
   const animationFrameRef = useRef<number>(0);
   const frameRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const soundRef = useRef<SoundManager | null>(null);
+  const countdownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastInputTimeRef = useRef(0);
+  const reducedMotionRef = useRef(
+    typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches,
+  );
 
   const [gameState, setGameState] = useState<GameState>("idle");
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [isMuted, setIsMuted] = useState(
+    () => typeof localStorage !== "undefined" && localStorage.getItem(MUTE_KEY) === "true",
+  );
+  const [shakeKey, setShakeKey] = useState(0);
 
   const navigate = useNavigate();
   const { onGameStart, onGameEnd, highScore } = useGameEconomy(GAME_ID);
   const highScoreRef = useRef(highScore);
   highScoreRef.current = highScore;
+
+  // ── Initialize sound manager ──
+  useEffect(() => {
+    const sm = new SoundManager();
+    sm.setMuted(isMuted);
+    soundRef.current = sm;
+    return () => {
+      soundRef.current = null;
+    };
+  }, []);
+
+  // ── Mute toggle ──
+  const toggleMute = useCallback(() => {
+    setIsMuted((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(MUTE_KEY, String(next));
+      } catch {
+        // no-op
+      }
+      soundRef.current?.setMuted(next);
+      return next;
+    });
+  }, []);
+
+  // ── Food eaten callback ──
+  const handleFoodEaten = useCallback((s: number, lvl: number) => {
+    setScore(s);
+    setLevel(lvl);
+    soundRef.current?.playEat();
+    soundRef.current?.vibrate(30);
+  }, []);
 
   // ── Game over: economy + store updates ──
   const handleGameOver = useCallback(
@@ -47,11 +108,16 @@ export default function SnakeGame() {
       onGameEnd(finalScore, lvl, stars);
       setIsNewHighScore(isHigh);
       setGameState("gameover");
+      soundRef.current?.playGameOver();
+      soundRef.current?.vibrate([80, 40, 160]);
+      if (!reducedMotionRef.current) {
+        setShakeKey((k) => k + 1);
+      }
     },
     [onGameEnd],
   );
 
-  // ── Start / Restart ──
+  // ── Start / Restart (with countdown) ──
   const startGame = useCallback(() => {
     onGameStart();
     const engine = new SnakeGameEngine({
@@ -59,10 +125,7 @@ export default function SnakeGame() {
       gridHeight: GRID_H,
       initialSpeed: INITIAL_SPEED,
     });
-    engine.onFoodEaten = (s, lvl) => {
-      setScore(s);
-      setLevel(lvl);
-    };
+    engine.onFoodEaten = handleFoodEaten;
     engine.onGameOver = (finalScore) => handleGameOver(finalScore);
     engine.start();
     engineRef.current = engine;
@@ -71,13 +134,53 @@ export default function SnakeGame() {
     setLevel(1);
     setIsPaused(false);
     setIsNewHighScore(false);
-    setGameState("playing");
-  }, [onGameStart, handleGameOver]);
+    setGameState("ready");
 
+    // Countdown sequence: 3 → 2 → 1 → GO! → play
+    let count = 3;
+    setCountdown(count);
+    soundRef.current?.playCountdown();
+
+    const step = () => {
+      count -= 1;
+      if (count > 0) {
+        setCountdown(count);
+        soundRef.current?.playCountdown();
+        countdownTimerRef.current = setTimeout(step, COUNTDOWN_STEP_MS);
+      } else if (count === 0) {
+        setCountdown(0); // "GO!"
+        soundRef.current?.playStart();
+        countdownTimerRef.current = setTimeout(step, COUNTDOWN_STEP_MS);
+      } else {
+        setCountdown(null);
+        engine.beginPlay();
+        setGameState("playing");
+        countdownTimerRef.current = null;
+      }
+    };
+    countdownTimerRef.current = setTimeout(step, COUNTDOWN_STEP_MS);
+  }, [onGameStart, handleFoodEaten, handleGameOver]);
+
+  // ── Cleanup countdown on unmount ──
+  useEffect(() => {
+    return () => {
+      if (countdownTimerRef.current) {
+        clearTimeout(countdownTimerRef.current);
+        countdownTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  // ── Quit ──
   const quitGame = useCallback(() => {
+    if (countdownTimerRef.current) {
+      clearTimeout(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
     engineRef.current = null;
     setGameState("idle");
     setIsPaused(false);
+    setCountdown(null);
     navigate("/");
   }, [navigate]);
 
@@ -94,7 +197,35 @@ export default function SnakeGame() {
     }
   }, [gameState, isPaused]);
 
-  // ── Render loop (requestAnimationFrame, separate from logic tick) ──
+  // ── Auto-pause when tab loses focus ──
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden && gameState === "playing" && !isPaused) {
+        engineRef.current?.pause();
+        setIsPaused(true);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [gameState, isPaused]);
+
+  // ── Direction input with debounce ──
+  const handleDirectionInput = useCallback((dir: Direction) => {
+    const now = performance.now();
+    if (now - lastInputTimeRef.current < INPUT_COOLDOWN) return;
+
+    const engine = engineRef.current;
+    if (!engine) return;
+
+    const accepted = engine.changeDirection(dir);
+    if (accepted) {
+      lastInputTimeRef.current = now;
+      soundRef.current?.playTurn();
+      soundRef.current?.vibrate(10);
+    }
+  }, []);
+
+  // ── Render loop (requestAnimationFrame, decoupled from logic tick) ──
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     const engine = engineRef.current;
@@ -109,6 +240,9 @@ export default function SnakeGame() {
         direction: engine.direction,
         gridWidth: engine.gridWidth,
         gridHeight: engine.gridHeight,
+        prevTail: engine.getPrevTail(),
+        tickProgress: engine.getTickProgress(),
+        eatPulse: reducedMotionRef.current ? 0 : engine.getEatPulse(),
       },
       CANVAS_SIZE,
       CANVAS_SIZE,
@@ -126,7 +260,7 @@ export default function SnakeGame() {
     return () => cancelAnimationFrame(animationFrameRef.current);
   }, [draw]);
 
-  // ── Game logic loop (dynamic speed via recursive setTimeout) ──
+  // ── Game logic loop (fixed-timestep via recursive setTimeout) ──
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
     const engine = engineRef.current;
@@ -138,7 +272,7 @@ export default function SnakeGame() {
     const loop = () => {
       if (cancelled) return;
       const result = engine.tick();
-      if (result.died) return; // onGameOver handled by engine callback
+      if (result.died) return;
       timeoutId = setTimeout(loop, engine.getSpeed());
     };
     timeoutId = setTimeout(loop, engine.getSpeed());
@@ -149,7 +283,7 @@ export default function SnakeGame() {
     };
   }, [gameState, isPaused]);
 
-  // ── Keyboard controls (Arrow keys + WASD, P/Space to pause) ──
+  // ── Keyboard controls (Arrow keys + WASD, P/Space to pause, M to mute) ──
   useEffect(() => {
     const keyMap: Record<string, Direction> = {
       ArrowUp: "UP",
@@ -160,24 +294,32 @@ export default function SnakeGame() {
       s: "DOWN",
       a: "LEFT",
       d: "RIGHT",
+      W: "UP",
+      S: "DOWN",
+      A: "LEFT",
+      D: "RIGHT",
     };
     const handler = (e: KeyboardEvent) => {
       const dir = keyMap[e.key];
       if (dir) {
         e.preventDefault();
-        engineRef.current?.changeDirection(dir);
+        handleDirectionInput(dir);
         return;
       }
-      if (e.key === "p" || e.key === " ") {
+      if (e.key === "p" || e.key === "P" || e.key === " ") {
         e.preventDefault();
         togglePause();
+      }
+      if (e.key === "m" || e.key === "M") {
+        e.preventDefault();
+        toggleMute();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [togglePause]);
+  }, [handleDirectionInput, togglePause, toggleMute]);
 
-  // ── Touch swipe controls ──
+  // ── Touch swipe on canvas ──
   const handleTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];
     touchStartRef.current = { x: t.clientX, y: t.clientY };
@@ -197,20 +339,73 @@ export default function SnakeGame() {
         : dy > 0
           ? "DOWN"
           : "UP";
-    engineRef.current?.changeDirection(dir);
+    handleDirectionInput(dir);
   };
 
-  const handleDpad = (dir: Direction) => {
-    engineRef.current?.changeDirection(dir);
-  };
-
-  const isPlaying = gameState === "playing";
+  const isActive = gameState === "playing" || gameState === "ready";
+  const showDpad = isActive && !isPaused;
+  const bestScore = Math.max(highScore, score);
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full">
+    <div className="flex flex-col items-center gap-2.5 w-full select-none">
+      {/* ── HUD ── */}
+      {isActive && (
+        <div className="flex items-center justify-between w-full max-w-[400px] gap-2">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border border-border/50">
+              <span className="font-heading font-bold text-base text-foreground leading-none">
+                {score}
+              </span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wide">
+                Score
+              </span>
+            </div>
+            <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-card border border-border/50">
+              <Trophy className="w-3 h-3 text-gold" />
+              <span className="font-heading font-bold text-sm text-foreground leading-none">
+                {bestScore}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-card border border-border/50">
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wide">
+                Lvl
+              </span>
+              <span className="font-heading font-bold text-sm text-primary leading-none">
+                {level}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleMute}
+              className="w-11 h-11 rounded-xl bg-card border border-border/50 flex items-center justify-center text-foreground active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+            <button
+              onClick={togglePause}
+              disabled={gameState !== "playing"}
+              className="w-11 h-11 rounded-xl bg-card border border-border/50 flex items-center justify-center text-foreground active:scale-95 transition-transform disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label={isPaused ? "Resume" : "Pause"}
+            >
+              {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Canvas + overlays ── */}
-      <div
-        className="relative w-full max-w-[400px] touch-none select-none"
+      <motion.div
+        key={shakeKey}
+        animate={
+          shakeKey > 0
+            ? { x: [0, -6, 6, -4, 4, 0], y: [0, -3, 3, -2, 2, 0] }
+            : { x: 0, y: 0 }
+        }
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="relative w-full max-w-[400px] touch-none"
+        style={{ maxWidth: "min(400px, calc(100vh - 260px))" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -224,29 +419,38 @@ export default function SnakeGame() {
           role="img"
         />
 
-        {/* Score + level + pause button (top bar overlay) */}
-        {isPlaying && (
-          <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 pointer-events-none">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-sm">
-              <span className="font-heading font-bold text-sm text-white">
-                {score}
-              </span>
-              <span className="text-[10px] text-white/60">LVL {level}</span>
-            </div>
-            <button
-              onClick={togglePause}
-              className="pointer-events-auto w-11 h-11 rounded-xl bg-black/40 backdrop-blur-sm flex items-center justify-center text-white active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
-              aria-label={isPaused ? "Resume" : "Pause"}
+        {/* Countdown overlay */}
+        <AnimatePresence>
+          {countdown !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-2xl"
             >
-              {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-            </button>
-          </div>
-        )}
+              <motion.div
+                key={countdown}
+                initial={{ scale: 0.4, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 1.8, opacity: 0 }}
+                transition={{ duration: 0.35, ease: "backOut" }}
+                className="font-heading font-bold text-white text-6xl"
+              >
+                {countdown === 0 ? "GO!" : countdown}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Idle / start overlay */}
         {gameState === "idle" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm gap-4 rounded-2xl">
-            <span className="text-5xl">🐍</span>
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Droplet className="w-14 h-14 text-primary" />
+            </motion.div>
             <button
               onClick={startGame}
               className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -254,7 +458,10 @@ export default function SnakeGame() {
               Start Game
             </button>
             {highScore > 0 && (
-              <span className="text-xs text-white/60">Best: {highScore}</span>
+              <div className="flex items-center gap-1.5 text-xs text-white/60">
+                <Trophy className="w-3 h-3 text-gold" />
+                Best: {highScore}
+              </div>
             )}
           </div>
         )}
@@ -274,50 +481,63 @@ export default function SnakeGame() {
 
         {/* Game Over overlay */}
         {gameState === "gameover" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm gap-3 rounded-2xl px-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm gap-2.5 rounded-2xl px-4"
+          >
             {isNewHighScore && (
-              <span className="px-3 py-1 rounded-full bg-gold/20 text-gold text-xs font-bold mb-1">
-                ⭐ New High Score!
-              </span>
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring" }}
+                className="flex items-center gap-1 px-3 py-1 rounded-full bg-gold/20 text-gold text-xs font-bold mb-1"
+              >
+                <Star className="w-3 h-3 fill-gold" /> New High Score!
+              </motion.span>
             )}
             <h3 className="font-heading font-bold text-3xl text-white">Game Over!</h3>
-            <p className="text-sm text-white/70">Final Score</p>
+            <p className="text-xs text-white/60 uppercase tracking-wide">Final Score</p>
             <span className="font-heading font-bold text-4xl text-white">{score}</span>
-            <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-1.5 text-xs text-white/50">
+              <Trophy className="w-3 h-3 text-gold/70" />
+              Best: {bestScore}
+            </div>
+            <div className="flex items-center gap-3 mt-3">
               <button
                 onClick={startGame}
-                className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm active:scale-95 transition-transform"
+                className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm active:scale-95 transition-transform"
               >
-                Play Again
+                <Play className="w-3.5 h-3.5 fill-primary-foreground" /> Play Again
               </button>
               <button
                 onClick={quitGame}
                 className="px-6 py-2.5 rounded-xl bg-white/10 text-white font-heading font-bold text-sm active:scale-95 transition-transform"
               >
-                Quit
+                Back to Hub
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
 
-      {/* ── On-screen D-pad (mobile) ── */}
-      {isPlaying && !isPaused && (
-        <div className="grid grid-cols-3 grid-rows-3 gap-2 w-48 h-48 mt-1">
+      {/* ── On-screen D-pad ── */}
+      {showDpad && (
+        <div className="grid grid-cols-3 grid-rows-3 gap-1.5 w-44 h-44 mt-0.5">
           <div />
-          <DpadButton dir="UP" onPress={handleDpad}>
+          <DpadButton dir="UP" onPress={handleDirectionInput}>
             <ChevronUp className="w-6 h-6" />
           </DpadButton>
           <div />
-          <DpadButton dir="LEFT" onPress={handleDpad}>
+          <DpadButton dir="LEFT" onPress={handleDirectionInput}>
             <ChevronLeft className="w-6 h-6" />
           </DpadButton>
           <div />
-          <DpadButton dir="RIGHT" onPress={handleDpad}>
+          <DpadButton dir="RIGHT" onPress={handleDirectionInput}>
             <ChevronRight className="w-6 h-6" />
           </DpadButton>
           <div />
-          <DpadButton dir="DOWN" onPress={handleDpad}>
+          <DpadButton dir="DOWN" onPress={handleDirectionInput}>
             <ChevronDown className="w-6 h-6" />
           </DpadButton>
           <div />
@@ -346,7 +566,8 @@ function DpadButton({
         e.preventDefault();
         onPress(dir);
       }}
-      className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 text-white active:bg-primary active:scale-110 transition-colors touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      onContextMenu={(e) => e.preventDefault()}
+      className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 text-white active:bg-primary active:scale-110 transition-all touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       aria-label={dir}
     >
       {children}

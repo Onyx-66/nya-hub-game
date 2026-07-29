@@ -1,6 +1,7 @@
 // =============================================
 // snakeRenderer — Pure canvas drawing for the Snake game.
-// No React, no game logic; just paints engine state to a 2D context.
+// Supports smooth interpolation between grid cells, eat-pulse
+// animation, and the existing cat-themed visuals.
 // =============================================
 
 import type { Direction, SnakeSegment } from "../logic/snakeEngine";
@@ -32,6 +33,13 @@ export interface RenderState {
   direction: Direction;
   gridWidth: number;
   gridHeight: number;
+  prevTail: SnakeSegment | null;
+  tickProgress: number; // 0-1 interpolation between ticks
+  eatPulse: number; // 0-1 head scale boost after eating
+}
+
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
 }
 
 function lerpColor(a: [number, number, number], b: [number, number, number], t: number): string {
@@ -218,22 +226,61 @@ function drawDirectionIndicator(
   ctx.fill();
 }
 
+/**
+ * Draws the snake with smooth interpolation between tick positions.
+ * Each segment slides from the position behind it toward its own position,
+ * creating a continuous gliding effect. The tail retracts from its old
+ * position (prevTail) toward the new last segment.
+ */
 function drawSnake(
   ctx: CanvasRenderingContext2D,
   snake: SnakeSegment[],
   cell: number,
   direction: Direction,
   frame: number,
+  prevTail: SnakeSegment | null,
+  tickProgress: number,
+  eatPulse: number,
 ) {
   const n = snake.length;
+  const p = tickProgress;
+
   // Draw tail-first so head renders on top.
   for (let i = n - 1; i >= 0; i--) {
     const seg = snake[i];
+
+    // Compute interpolated render position.
+    let rx: number, ry: number;
+
+    if (i < n - 1) {
+      // Head and body: slide from the segment behind toward own position.
+      const behind = snake[i + 1];
+      rx = lerp(behind.x, seg.x, p);
+      ry = lerp(behind.y, seg.y, p);
+    } else {
+      // Tail: retract from prevTail toward own position.
+      if (prevTail) {
+        rx = lerp(prevTail.x, seg.x, p);
+        ry = lerp(prevTail.y, seg.y, p);
+      } else {
+        rx = seg.x;
+        ry = seg.y;
+      }
+    }
+
+    const cx = rx * cell + cell / 2;
+    const cy = ry * cell + cell / 2;
+
     const t = n > 1 ? i / (n - 1) : 0;
     const color = lerpColor(HEAD_RGB, TAIL_RGB, t);
-    const cx = seg.x * cell + cell / 2;
-    const cy = seg.y * cell + cell / 2;
-    const pulse = i === 0 ? 1 : 1 + Math.sin(frame * 0.2 + i) * 0.04 * (i % 2 === 0 ? 1 : -1);
+
+    // Head gets eat-pulse scale boost; body gets subtle breathing pulse.
+    let pulse: number;
+    if (i === 0) {
+      pulse = 1 + eatPulse * 0.18;
+    } else {
+      pulse = 1 + Math.sin(frame * 0.2 + i) * 0.04 * (i % 2 === 0 ? 1 : -1);
+    }
     const sz = cell * 0.86 * pulse;
 
     ctx.fillStyle = color;
@@ -259,5 +306,14 @@ export function renderSnake(
   drawBackground(ctx, width, height);
   drawGrid(ctx, width, height, cell, state.gridWidth, state.gridHeight);
   drawFood(ctx, state.food, cell, frame);
-  drawSnake(ctx, state.snake, cell, state.direction, frame);
+  drawSnake(
+    ctx,
+    state.snake,
+    cell,
+    state.direction,
+    frame,
+    state.prevTail,
+    state.tickProgress,
+    state.eatPulse,
+  );
 }
