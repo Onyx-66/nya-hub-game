@@ -8,6 +8,10 @@ import SnakeGameWrapper from "@/games/snake";
 import { SNAKE_GAME_META } from "@/games/snake/game.config";
 import BlockBlastGameWrapper from "@/games/block-blast";
 import { BLOCK_BLAST_META } from "@/games/block-blast/game.config";
+import WaterSortGameWrapper from "@/games/water-sort";
+import { WATER_SORT_META } from "@/games/water-sort/game.config";
+import MeowdokuGameWrapper from "@/games/meowdoku";
+import { MEOWDOKU_META } from "@/games/meowdoku/game.config";
 
 interface GameEntry {
   name: string;
@@ -17,6 +21,8 @@ interface GameEntry {
 const GAME_ENTRIES: Record<string, GameEntry> = {
   snake: { name: SNAKE_GAME_META.displayName ?? "Snake", Component: SnakeGameWrapper },
   "block-blast": { name: BLOCK_BLAST_META.displayName ?? "Block Blast", Component: BlockBlastGameWrapper },
+  "water-sort": { name: WATER_SORT_META.displayName ?? "Water Sort", Component: WaterSortGameWrapper },
+  meowdoku: { name: MEOWDOKU_META.displayName ?? "Meowdoku", Component: MeowdokuGameWrapper },
 };
 
 function GameLoadingScreen({ name }: { name: string }) {

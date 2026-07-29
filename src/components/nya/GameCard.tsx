@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Lock, Play, Star, Sparkles, PawPrint, Feather, Sword, LayoutGrid, Droplet, Gem, Palette } from "lucide-react";
+import { Lock, Play, Star, Sparkles, PawPrint, Feather, Sword, LayoutGrid, Droplet, Gem, Palette, PaintBucket } from "lucide-react";
 import type { ComponentType, CSSProperties } from "react";
 import type { GameMeta } from "@/types";
 import { scoreToStars } from "@/hooks/useGameEconomy";
@@ -21,6 +21,7 @@ const LUCIDE_ICONS: Record<string, IconComp> = {
   Droplet,
   Gem,
   Palette,
+  PaintBucket,
 };
 
 /** Pastel gradient per category */

@@ -53,11 +53,11 @@ const games: GameMeta[] = [
       ar: "افرق الألوان، حل اللغز!",
     },
     icon: "",
-    iconPath: "lucide:Droplet",
+    iconPath: "lucide:PaintBucket",
     primaryColor: "#60A5FA",
-    difficulty: "easy",
+    difficulty: "medium",
     category: "puzzle",
-    isComingSoon: true,
+    isComingSoon: false,
   },
   {
     id: "meowdoku",
@@ -72,7 +72,7 @@ const games: GameMeta[] = [
     primaryColor: "#C084FC",
     difficulty: "hard",
     category: "puzzle",
-    isComingSoon: true,
+    isComingSoon: false,
   },
   {
     id: "candy-crush",
