@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { SnakeGame, type Direction } from "../logic/snakeEngine";
+import { SnakeGameEngine, type Direction } from "../logic/snakeEngine";
 import { useGameEconomy } from "@/hooks/useGameEconomy";
 
 // =============================================
@@ -36,27 +36,27 @@ export default function SnakeCanvas({
   onGameOver,
 }: SnakeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const engineRef = useRef<SnakeGame | null>(null);
+  const engineRef = useRef<SnakeGameEngine | null>(null);
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const { awardPoints, checkPowerup } = useGameEconomy("Snake Game");
 
   // ── Score callback: update UI + award economy paws ──
-  const handleScoreChange = useCallback(
-    (points: number) => {
+  const handleFoodEaten = useCallback(
+    (newScore: number, _level: number) => {
       setScore((prev) => {
-        const next = prev + points;
-        onScoreChange?.(next);
-        return next;
+        const delta = newScore - prev;
+        awardPoints(delta);
+        onScoreChange?.(newScore);
+        return newScore;
       });
-      awardPoints(points);
     },
     [awardPoints, onScoreChange]
   );
 
   const handleGameOver = useCallback(
-    (finalScore: number) => {
+    (finalScore: number, _level: number) => {
       setIsGameOver(true);
       setIsRunning(false);
       onGameOver?.(finalScore);
@@ -146,32 +146,33 @@ export default function SnakeCanvas({
   // ── Start / Restart ──
   const startGame = useCallback(() => {
     checkPowerup();
-    const engine = new SnakeGame(
-      GRID_W,
-      GRID_H,
-      handleScoreChange,
-      handleGameOver
-    );
+    const engine = new SnakeGameEngine({
+      gridWidth: GRID_W,
+      gridHeight: GRID_H,
+      initialSpeed: TICK_MS,
+    });
+    engine.onFoodEaten = handleFoodEaten;
+    engine.onGameOver = handleGameOver;
     engine.start();
     engineRef.current = engine;
     setScore(0);
     setIsGameOver(false);
     setIsRunning(true);
     draw();
-  }, [checkPowerup, draw, handleScoreChange, handleGameOver]);
+  }, [checkPowerup, draw, handleFoodEaten, handleGameOver]);
 
   // ── Keyboard controls ──
   useEffect(() => {
     if (!isRunning) return;
     const keyMap: Record<string, Direction> = {
-      ArrowUp: "up",
-      ArrowDown: "down",
-      ArrowLeft: "left",
-      ArrowRight: "right",
-      w: "up",
-      s: "down",
-      a: "left",
-      d: "right",
+      ArrowUp: "UP",
+      ArrowDown: "DOWN",
+      ArrowLeft: "LEFT",
+      ArrowRight: "RIGHT",
+      w: "UP",
+      s: "DOWN",
+      a: "LEFT",
+      d: "RIGHT",
     };
     const handler = (e: KeyboardEvent) => {
       const dir = keyMap[e.key];
@@ -199,7 +200,7 @@ export default function SnakeCanvas({
     const absY = Math.abs(dy);
     if (Math.max(absX, absY) < 20) return; // ignore tiny taps
     const dir: Direction =
-      absX > absY ? (dx > 0 ? "right" : "left") : dy > 0 ? "down" : "up";
+      absX > absY ? (dx > 0 ? "RIGHT" : "LEFT") : dy > 0 ? "DOWN" : "UP";
     engineRef.current?.changeDirection(dir);
     touchStart.current = null;
   };
@@ -269,13 +270,13 @@ export default function SnakeCanvas({
       {isRunning && !isGameOver && (
         <div className="grid grid-cols-3 grid-rows-3 gap-2 w-40 h-40 mt-2">
           <div />
-          <DpadButton dir="up" onPress={handleDpad} label="▲" />
+          <DpadButton dir="UP" onPress={handleDpad} label="▲" />
           <div />
-          <DpadButton dir="left" onPress={handleDpad} label="◀" />
+          <DpadButton dir="LEFT" onPress={handleDpad} label="◀" />
           <div />
-          <DpadButton dir="right" onPress={handleDpad} label="▶" />
+          <DpadButton dir="RIGHT" onPress={handleDpad} label="▶" />
           <div />
-          <DpadButton dir="down" onPress={handleDpad} label="▼" />
+          <DpadButton dir="DOWN" onPress={handleDpad} label="▼" />
           <div />
         </div>
       )}
