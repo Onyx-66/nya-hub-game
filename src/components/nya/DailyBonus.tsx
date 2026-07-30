@@ -3,30 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PawPrint, Gift, Play, X } from "lucide-react";
 import { adService } from "@/services/adService";
 import { useEconomyStore } from "@/store/economyStore";
+import {
+  DAILY_BASE_REWARD,
+  DAILY_AD_REWARD,
+  getDailyStatus,
+  markDailyClaimed,
+} from "@/utils/dailyReward";
 
-const STORAGE_KEY = "nya-daily-bonus";
-const BASE_REWARD = 50;
-const AD_REWARD = 150;
-
-function getTodayKey(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function hasClaimedToday(): boolean {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === getTodayKey();
-  } catch {
-    return false;
-  }
-}
-
-function markClaimed(): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, getTodayKey());
-  } catch {
-    /* ignore */
-  }
-}
+const BASE_REWARD = DAILY_BASE_REWARD;
+const AD_REWARD = DAILY_AD_REWARD;
 
 /**
  * Daily bonus popup — shows on first app open each day.
@@ -40,14 +25,14 @@ export default function DailyBonus() {
   useEffect(() => {
     // Show after a brief delay so it doesn't jank on initial load
     const timer = setTimeout(() => {
-      if (!hasClaimedToday()) setVisible(true);
+      if (getDailyStatus().canClaim) setVisible(true);
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   const handleClaim = (amount: number) => {
     addPaws(amount, `Daily bonus: ${amount} paws`);
-    markClaimed();
+    markDailyClaimed();
     setVisible(false);
   };
 

@@ -8,6 +8,7 @@ import { useEconomyStore } from "@/store/economyStore";
 import ProfileBanner from "@/features/profile/ProfileBanner";
 import ProfileStatsGrid from "@/features/profile/ProfileStatsGrid";
 import ProfileAchievements from "@/features/profile/ProfileAchievements";
+import DailyRewardCard from "@/features/profile/DailyRewardCard";
 import AvatarPickerModal from "@/features/profile/AvatarPickerModal";
 import BioEditorModal from "@/features/profile/BioEditorModal";
 
@@ -53,6 +54,9 @@ export default function ProfileScreen() {
             <p className="text-xs text-muted-foreground mt-0.5">Gems</p>
           </div>
         </div>
+
+        {/* Daily reward countdown */}
+        <DailyRewardCard />
 
         {/* Stats grid */}
         <ProfileStatsGrid />
