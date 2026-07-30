@@ -14,6 +14,7 @@ import { NYA_CRUSH_META } from "@/games/candy-crush/game.config";
 import { COLORING_META } from "@/games/coloring/game.config";
 import DailyBonus from "@/components/nya/DailyBonus";
 import DailyChallengesSection from "@/components/nya/DailyChallengesSection";
+import OnboardingTutorial from "@/components/nya/OnboardingTutorial";
 import { useChallengeStore } from "@/store/challengeStore";
 import type { GameMeta } from "@/types";
 
@@ -152,6 +153,9 @@ export default function HubScreen() {
 
       {/* Daily bonus popup — shows on first app open each day */}
       <DailyBonus />
+
+      {/* Onboarding tutorial — shows on first visit only */}
+      <OnboardingTutorial />
     </NyaLayout>
   );
 }

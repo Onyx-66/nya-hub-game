@@ -24,6 +24,7 @@ import Toggle from "@/components/ui/Toggle";
 import { audioService } from "@/services/audioService";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/useGameStore";
+import { useOnboardingStore } from "@/store/onboardingStore";
 import { useToast } from "@/components/ui/use-toast";
 
 const AVATARS = ["🐱", "😺", "😸", "😻", "😼", "🐈‍⬛", "👑", "🚀"];
@@ -93,6 +94,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function SettingsScreen() {
   const { user, updateProfile } = useAuthStore();
   const clearGameData = useGameStore((s) => s.clearGameData);
+  const resetOnboarding = useOnboardingStore((s) => s.reset);
   const { toast } = useToast();
 
   const [sfxOn, setSfxOn] = useState(audioService.isSFXEnabled());
@@ -316,6 +318,14 @@ export default function SettingsScreen() {
 
         {/* ── ABOUT ── */}
         <Section title="About">
+          <Row
+            icon={RotateCcw}
+            label="Replay Tutorial"
+            onClick={() => {
+              resetOnboarding();
+              toast({ title: "Tutorial will show on next hub visit!" });
+            }}
+          />
           <Row
             icon={Star}
             label="Rate the App"
