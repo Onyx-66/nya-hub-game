@@ -41,6 +41,7 @@ export function createProfile(pseudonym: string, country = ""): UserProfile {
     bio: "",
     bannerId: null,
     customAvatarUrl: null,
+    customBannerUrl: null,
     title: null,
     titles: [],
     joinedDate: new Date().toISOString(),
@@ -62,6 +63,7 @@ interface AuthState {
   updateProfile: (data: Partial<UserProfile>) => void;
   updateBio: (bio: string) => void;
   updateAvatar: (url: string | null) => void;
+  updateCustomBanner: (url: string | null) => void;
   updateBanner: (bannerId: string | null) => void;
   addTitle: (titleId: string) => void;
   setTitle: (titleId: string | null) => void;
@@ -108,6 +110,11 @@ export const useAuthStore = create<AuthState>()(
       updateAvatar: (url) =>
         set((s) =>
           s.user ? { user: { ...s.user, customAvatarUrl: url } } : s
+        ),
+
+      updateCustomBanner: (url) =>
+        set((s) =>
+          s.user ? { user: { ...s.user, customBannerUrl: url } } : s
         ),
 
       updateBanner: (bannerId) =>

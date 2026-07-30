@@ -4,6 +4,7 @@ import CatAvatar from "@/components/nya/CatAvatar";
 import { useAuthStore } from "@/store/authStore";
 import { getBanner, getTitle } from "@/data/profileCatalog";
 import PhotoUploadButton from "./PhotoUploadButton";
+import BannerUploadButton from "./BannerUploadButton";
 
 interface ProfileBannerProps {
   onEditAvatar: () => void;
@@ -41,9 +42,15 @@ export default function ProfileBanner({ onEditAvatar, onEditBio }: ProfileBanner
       transition={{ duration: 0.4 }}
       className="rounded-3xl overflow-hidden border border-border/50 shadow-xl"
     >
-      {/* Banner gradient */}
-      <div className={`h-28 bg-gradient-to-r ${banner.gradient} relative`}>
+      {/* Banner — custom image or gradient */}
+      <div className="h-28 relative overflow-hidden">
+        {user.customBannerUrl ? (
+          <img src={user.customBannerUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <div className={`absolute inset-0 bg-gradient-to-r ${banner.gradient}`} />
+        )}
         <div className="absolute inset-0 bg-black/10" />
+        <BannerUploadButton />
         <div className="absolute -bottom-1 right-4 flex items-center gap-1 text-[10px] font-bold bg-black/30 backdrop-blur-sm text-white px-2.5 py-1 rounded-full">
           <Calendar className="w-2.5 h-2.5" /> {joinedDate}
         </div>

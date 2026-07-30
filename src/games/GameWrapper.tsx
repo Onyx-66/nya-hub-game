@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PawPrint } from "lucide-react";
+import { getGameIcon } from "@/data/gameIcons";
 import NyaButton from "@/components/nya/NyaButton";
 import NyaLayout from "@/components/nya/NyaLayout";
 import SnakeGameWrapper from "@/games/snake";
@@ -43,7 +44,14 @@ const GAME_ENTRIES: Record<string, GameEntry> = {
   "paws-merge": { name: PAWS_MERGE_META.displayName ?? "Paws Merge", Component: PawsMergeGameWrapper },
 };
 
-function GameLoadingScreen({ name }: { name: string }) {
+function GameLoadingScreen({
+  name,
+  Icon,
+}: {
+  name: string;
+  Icon: React.ComponentType<{ className?: string }> | null;
+}) {
+  const LoadingIcon = Icon ?? PawPrint;
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-16">
       <motion.div
@@ -51,7 +59,7 @@ function GameLoadingScreen({ name }: { name: string }) {
         transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
         className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-400 to-violet-500 flex items-center justify-center shadow-lg"
       >
-        <PawPrint className="w-8 h-8 text-white" />
+        <LoadingIcon className="w-8 h-8 text-white" />
       </motion.div>
       <p className="font-heading text-sm text-muted-foreground">Loading {name}...</p>
     </div>
@@ -74,8 +82,14 @@ export default function GameWrapper() {
 
   if (entry) {
     const { Component, name } = entry;
+    const GameIcon = slug ? getGameIcon(slug) : null;
     return (
-      <NyaLayout title={name} hideNav={["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "")} compact={["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "")}>
+      <NyaLayout
+        title={name}
+        titleIcon={GameIcon ? <GameIcon className="w-5 h-5 text-primary" /> : undefined}
+        hideNav={["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "")}
+        compact={["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "")}
+      >
         <div className={`relative ${["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "") ? "h-full" : "min-h-[60vh]"}`}>
           <Component />
           <AnimatePresence>
@@ -86,7 +100,7 @@ export default function GameWrapper() {
                 transition={{ duration: 0.4, ease: "easeOut" }}
                 className="absolute inset-0 z-10 flex items-center justify-center bg-background/95 backdrop-blur-sm rounded-2xl"
               >
-                <GameLoadingScreen name={name} />
+                <GameLoadingScreen name={name} Icon={GameIcon} />
               </motion.div>
             )}
           </AnimatePresence>

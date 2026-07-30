@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Play, Sparkles, PawPrint } from "lucide-react";
 import type { GameMeta } from "@/types";
-import { GAME_SLUG_ICONS } from "@/components/nya/GameCard";
+import { GAME_SLUG_ICONS } from "@/data/gameIcons";
 
 interface FeaturedBannerProps {
   games: GameMeta[];

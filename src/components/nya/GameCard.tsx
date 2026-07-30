@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Lock, Play, Star, Sparkles, Flame, TrendingUp, PawPrint, Feather, Sword, LayoutGrid, Droplet, Gem, Palette, PaintBucket } from "lucide-react";
-import type { ComponentType, CSSProperties } from "react";
+import { Lock, Play, Star, Sparkles, Flame, TrendingUp, PawPrint } from "lucide-react";
+import { GAME_SLUG_ICONS } from "@/data/gameIcons";
 import type { GameMeta } from "@/types";
 import { scoreToStars } from "@/hooks/useGameEconomy";
 import DifficultyDots from "@/components/nya/DifficultyDots";
 
 export type GameBadge = "trend" | "hot" | null;
+export { GAME_SLUG_ICONS };
 
 interface GameCardProps {
   game: GameMeta;
@@ -15,21 +16,6 @@ interface GameCardProps {
   badge?: GameBadge;
   onPlay?: (game: GameMeta) => void;
 }
-
-type IconComp = ComponentType<{ className?: string; style?: CSSProperties }>;
-
-export const GAME_SLUG_ICONS: Record<string, IconComp> = {
-  snake: Droplet,
-  "water-sort": PaintBucket,
-  meowdoku: LayoutGrid,
-  "angry-birds": Feather,
-  "quiz-sword": Sword,
-  "block-blast": LayoutGrid,
-  "candy-crush": Gem,
-  coloring: Palette,
-  "multi-color-fill": Palette,
-  "paws-merge": PawPrint,
-};
 
 /** Pastel gradient per category */
 const categoryGradients: Record<string, string> = {

@@ -107,6 +107,7 @@ export interface UserProfile {
   bio: string;
   bannerId: string | null;
   customAvatarUrl: string | null;
+  customBannerUrl: string | null;
   title: string | null;
   titles: string[];
   joinedDate: string;

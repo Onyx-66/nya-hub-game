@@ -10,6 +10,8 @@ interface NyaLayoutProps {
   showBack?: boolean;
   title?: string;
   onBack?: () => void;
+  /** Optional icon node rendered before the title. */
+  titleIcon?: ReactNode;
   /** Hide the bottom navigation bar. */
   hideNav?: boolean;
   /** Compact mode: no scroll, minimal padding, fills viewport height. */
@@ -25,6 +27,7 @@ export default function NyaLayout({
   children,
   showBack = true,
   title,
+  titleIcon,
   onBack,
   hideNav = false,
   compact = false,
@@ -56,7 +59,8 @@ export default function NyaLayout({
           )}
 
           {title && (
-            <h1 className="font-heading font-bold text-lg text-foreground flex-1 truncate">
+            <h1 className="font-heading font-bold text-lg text-foreground flex-1 truncate flex items-center gap-2">
+              {titleIcon}
               {title}
             </h1>
           )}

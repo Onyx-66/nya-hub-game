@@ -1,23 +1,18 @@
 import { useState, useRef } from "react";
-import { motion } from "framer-motion";
 import { Camera, Loader2, X } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { base44 } from "@/api/base44Client";
 import ImageCropperModal from "@/components/nya/ImageCropperModal";
 
-interface PhotoUploadButtonProps {
-  className?: string;
-}
-
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 /**
- * Opens the image cropper (1:1) for a custom profile avatar,
+ * Opens the image cropper (16:9) for a custom profile banner,
  * then uploads the cropped result.
  */
-export default function PhotoUploadButton({ className = "" }: PhotoUploadButtonProps) {
-  const { updateAvatar } = useAuthStore();
+export default function BannerUploadButton() {
+  const { updateCustomBanner } = useAuthStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -39,10 +34,12 @@ export default function PhotoUploadButton({ className = "" }: PhotoUploadButtonP
   const handleConfirm = async (croppedFile: File) => {
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: croppedFile });
-      updateAvatar(file_url);
+      const { file_url } = await base44.integrations.Core.UploadFile({
+        file: croppedFile,
+      });
+      updateCustomBanner(file_url);
     } catch (err) {
-      console.error("Avatar upload failed:", err);
+      console.error("Banner upload failed:", err);
       setError("Upload failed. Please try again.");
     } finally {
       setUploading(false);
@@ -51,20 +48,19 @@ export default function PhotoUploadButton({ className = "" }: PhotoUploadButtonP
 
   return (
     <>
-      <motion.button
-        type="button"
-        whileTap={{ scale: 0.9 }}
+      <button
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
-        className={`relative w-7 h-7 rounded-full bg-accent flex items-center justify-center shadow-lg disabled:opacity-60 ${className}`}
-        aria-label="Upload photo"
+        className="absolute top-2 right-2 z-10 flex items-center gap-1.5 text-[10px] font-bold bg-black/40 backdrop-blur-sm text-white px-2.5 py-1.5 rounded-full hover:bg-black/60 transition-colors disabled:opacity-60"
+        aria-label="Upload banner"
       >
         {uploading ? (
-          <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+          <Loader2 className="w-3 h-3 animate-spin" />
         ) : (
-          <Camera className="w-3.5 h-3.5 text-white" />
+          <Camera className="w-3 h-3" />
         )}
-      </motion.button>
+        {uploading ? "Uploading…" : "Banner"}
+      </button>
 
       <input
         ref={inputRef}
@@ -81,11 +77,11 @@ export default function PhotoUploadButton({ className = "" }: PhotoUploadButtonP
       <ImageCropperModal
         open={!!selectedFile}
         file={selectedFile}
-        aspectRatio={1}
-        title="Crop Avatar"
+        aspectRatio={16 / 9}
+        title="Crop Banner"
         onClose={() => setSelectedFile(null)}
         onConfirm={handleConfirm}
-        maxOutputWidth={256}
+        maxOutputWidth={800}
       />
 
       {error && (
