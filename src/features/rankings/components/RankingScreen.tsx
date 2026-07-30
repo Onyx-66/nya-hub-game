@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Globe, Flag, Users, Check, Sparkles, RefreshCw } from "lucide-react";
+import { ChevronDown, Globe, Flag, Users, Check, Sparkles, RefreshCw, PawPrint } from "lucide-react";
 import NyaLayout from "@/components/nya/NyaLayout";
+import { getGameIcon } from "@/data/gameIcons";
 import { useAuthStore } from "@/store/authStore";
 import { useLeaderboard, type LeaderboardScope } from "../hooks/useLeaderboard";
 import { useChallengeStore } from "@/store/challengeStore";
@@ -12,18 +13,17 @@ import FriendsLeaderboard from "./FriendsLeaderboard";
 interface RankingGame {
   slug: string;
   title: string;
-  icon: string;
 }
 
 const RANKING_GAMES: RankingGame[] = [
-  { slug: "snake", title: "Nya Snake", icon: "" },
-  { slug: "block-blast", title: "Block Blast", icon: "" },
-  { slug: "angry-birds", title: "Angry Birds", icon: "" },
-  { slug: "sword-of-knowledge", title: "Sword of Knowledge", icon: "" },
-  { slug: "water-sort", title: "Water Sort", icon: "" },
-  { slug: "meowdoku", title: "Meowdoku", icon: "" },
-  { slug: "candy-crush", title: "Candy Crush", icon: "" },
-  { slug: "drawing-coloring", title: "Drawing Coloring", icon: "" },
+  { slug: "snake", title: "Nya Snake" },
+  { slug: "block-blast", title: "Block Blast" },
+  { slug: "angry-birds", title: "Angry Birds" },
+  { slug: "sword-of-knowledge", title: "Sword of Knowledge" },
+  { slug: "water-sort", title: "Water Sort" },
+  { slug: "meowdoku", title: "Meowdoku" },
+  { slug: "candy-crush", title: "Candy Crush" },
+  { slug: "drawing-coloring", title: "Drawing Coloring" },
 ];
 
 const SCOPES: {
@@ -46,6 +46,11 @@ function GameSelector({
 }) {
   const [open, setOpen] = useState(false);
 
+  const GameIcon = (g: RankingGame) => {
+    const Icon = getGameIcon(g.slug) ?? PawPrint;
+    return <Icon className="w-5 h-5 text-primary shrink-0" />;
+  };
+
   return (
     <div className="relative">
       <button
@@ -53,7 +58,7 @@ function GameSelector({
         className="w-full flex items-center justify-between gap-2 bg-muted/60 px-4 py-3 rounded-2xl text-left transition-colors hover:bg-muted"
       >
         <span className="flex items-center gap-2.5">
-          <span className="text-xl">{value.icon}</span>
+          {GameIcon(value)}
           <span className="font-heading font-semibold text-sm text-foreground">
             {value.title}
           </span>
@@ -91,7 +96,7 @@ function GameSelector({
                   }`}
                 >
                   <span className="flex items-center gap-2.5">
-                    <span className="text-lg">{g.icon}</span>
+                    {GameIcon(g)}
                     <span className="text-sm font-medium text-foreground">
                       {g.title}
                     </span>

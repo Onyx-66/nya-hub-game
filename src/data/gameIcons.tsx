@@ -30,6 +30,8 @@ export const GAME_SLUG_ICONS: Record<string, GameIconComp> = {
   coloring: Palette,
   "multi-color-fill": Palette,
   "paws-merge": PawPrint,
+  "sword-of-knowledge": Sword,
+  "drawing-coloring": Palette,
 };
 
 /** Returns the icon for a game slug, or null if none is defined. */
