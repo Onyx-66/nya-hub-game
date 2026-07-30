@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Pencil } from "lucide-react";
 import NyaLayout from "@/components/nya/NyaLayout";
@@ -11,6 +11,7 @@ import ProfileAchievements from "@/features/profile/ProfileAchievements";
 import DailyRewardCard from "@/features/profile/DailyRewardCard";
 import AvatarPickerModal from "@/features/profile/AvatarPickerModal";
 import BioEditorModal from "@/features/profile/BioEditorModal";
+import { useChallengeStore } from "@/store/challengeStore";
 
 export default function ProfileScreen() {
   const navigate = useNavigate();
@@ -18,6 +19,10 @@ export default function ProfileScreen() {
   const { paws, gems } = useEconomyStore();
   const [showAvatar, setShowAvatar] = useState(false);
   const [showBio, setShowBio] = useState(false);
+
+  useEffect(() => {
+    useChallengeStore.getState().addProgress("profileVisited", 1);
+  }, []);
 
   if (!user) {
     return (

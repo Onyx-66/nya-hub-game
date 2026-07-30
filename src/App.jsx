@@ -16,6 +16,7 @@ import GameWrapper from '@/games/GameWrapper';
 import SettingsScreen from '@/features/settings/components/SettingsScreen';
 import FriendsScreen from '@/features/friends/FriendsScreen';
 import AchievementsScreen from '@/features/achievements/AchievementsScreen';
+import ChallengesScreen from '@/features/challenges/ChallengesScreen';
 import AchievementNotification from '@/components/nya/AchievementNotification';
 import LoginModal from '@/features/landing/LoginModal';
 import { useAuthStore } from '@/store/authStore';
@@ -71,6 +72,7 @@ const AuthenticatedApp = () => {
           <Route path="/rankings" element={<RequireAuth><RankingsScreen /></RequireAuth>} />
           <Route path="/friends" element={<RequireAuth><FriendsScreen /></RequireAuth>} />
           <Route path="/achievements" element={<RequireAuth><AchievementsScreen /></RequireAuth>} />
+          <Route path="/challenges" element={<RequireAuth><ChallengesScreen /></RequireAuth>} />
           <Route path="/settings" element={<RequireAuth><SettingsScreen /></RequireAuth>} />
           <Route path="/game/:slug" element={<RequireAuth><GameWrapper /></RequireAuth>} />
           <Route path="*" element={<PageNotFound />} />

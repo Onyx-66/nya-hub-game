@@ -544,6 +544,14 @@ function genMisc(): AchievementDef[] {
     a("misc_xp_1000", "XP Adept", "Earn 1,000 XP", "special", "Zap", "text-yellow-400", "xp", 1000, 30, 60),
     a("misc_xp_10000", "XP Master", "Earn 10,000 XP", "special", "Zap", "text-yellow-400", "xp", 10000, 75, 150),
     a("misc_xp_50000", "XP Legend", "Earn 50,000 XP", "special", "Zap", "text-yellow-400", "xp", 50000, 200, 400),
+    // Daily challenge achievements
+    a("misc_daily_chal_1", "Challenge Accepted", "Complete 1 daily challenge", "special", "Target", "text-violet-400", "dailyChallengesClaimed", 1, 10, 20),
+    a("misc_daily_chal_10", "Challenger", "Complete 10 daily challenges", "special", "Target", "text-violet-400", "dailyChallengesClaimed", 10, 30, 60),
+    a("misc_daily_chal_50", "Challenge Master", "Complete 50 daily challenges", "special", "Award", "text-purple-400", "dailyChallengesClaimed", 50, 75, 150),
+    a("misc_daily_chal_100", "Challenge Legend", "Complete 100 daily challenges", "special", "Crown", "text-amber-400", "dailyChallengesClaimed", 100, 150, 300, 5),
+    a("misc_daily_streak_3", "Hat Trick", "Complete all daily challenges 3 days in a row", "special", "Flame", "text-orange-400", "dailyStreak", 3, 50, 100),
+    a("misc_daily_streak_7", "Week Warrior", "Complete all daily challenges 7 days in a row", "special", "Flame", "text-red-400", "dailyStreak", 7, 100, 200, 3),
+    a("misc_daily_streak_30", "Unstoppable", "Complete all daily challenges 30 days in a row", "special", "Flame", "text-red-500", "dailyStreak", 30, 300, 600, 10),
   ];
 }
 

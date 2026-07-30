@@ -9,7 +9,7 @@ type SoundEffect =
   | "paw-earn" | "paw-spend" | "gem-earn" | "gem-spend"
   | "purchase-success" | "purchase-fail" | "insufficient-funds"
   | "friend-request" | "friend-accept" | "gift-send" | "gift-receive"
-  | "achievement-unlock" | "level-up" | "milestone-reached"
+  | "achievement-unlock" | "challenge-complete" | "level-up" | "milestone-reached"
   | "game-start" | "game-over" | "game-win" | "game-lose"
   | "countdown-tick" | "countdown-end"
   | "correct-answer" | "wrong-answer"
@@ -228,6 +228,10 @@ class AudioService {
       case "achievement-unlock":
         this.melody([NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6], 0, 0.1, "sine", 0.4 * vol);
         this.tone(NOTE.E6, 0.4, 0.3, "sine", 0.2 * vol);
+        break;
+      case "challenge-complete":
+        this.melody([NOTE.E5, NOTE.G5, NOTE.C6], 0, 0.08, "sine", 0.35 * vol);
+        this.tone(NOTE.G6, 0.24, 0.2, "sine", 0.15 * vol);
         break;
       case "level-up":
         this.sweep(200, 800, 0, 0.4, "sine", 0.35 * vol);

@@ -4,6 +4,7 @@ import { PawPrint, Gift, Play, X } from "lucide-react";
 import { adService } from "@/services/adService";
 import { useEconomyStore } from "@/store/economyStore";
 import { useAchievementStore } from "@/store/achievementStore";
+import { useChallengeStore } from "@/store/challengeStore";
 import {
   DAILY_BASE_REWARD,
   DAILY_AD_REWARD,
@@ -37,6 +38,7 @@ export default function DailyBonus() {
     const ach = useAchievementStore.getState();
     ach.addProgress("pawsEarned", amount);
     ach.addProgress("dailyBonuses", 1);
+    useChallengeStore.getState().addProgress("pawsEarned", amount);
     setVisible(false);
   };
 

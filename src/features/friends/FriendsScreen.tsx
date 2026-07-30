@@ -9,6 +9,7 @@ import { useFriendsStore, type Friend } from "@/store/friendsStore";
 import { useEconomyStore } from "@/store/economyStore";
 import { useAuthStore } from "@/store/authStore";
 import { useAchievementStore } from "@/store/achievementStore";
+import { useChallengeStore } from "@/store/challengeStore";
 import FriendCard from "./FriendCard";
 import FriendSearchTab from "./FriendSearchTab";
 
@@ -26,9 +27,10 @@ export default function FriendsScreen() {
   const [giftFriend, setGiftFriend] = useState<Friend | null>(null);
   const [giftError, setGiftError] = useState("");
 
-  // Generate mock friend requests on first load
+  // Generate mock friend requests on first load + track visit
   useEffect(() => {
     generateMockRequests(3);
+    useChallengeStore.getState().addProgress("friendsVisited", 1);
   }, [generateMockRequests]);
 
   const handleGift = (friend: Friend) => {
@@ -43,6 +45,7 @@ export default function FriendsScreen() {
       ach.addProgress("giftsSent", 1);
       ach.addProgress("totalSpent", GIFT_COST_GEMS);
       ach.setProgress("friendsViewed", 1);
+      useChallengeStore.getState().addProgress("giftsSent", 1);
       setGiftFriend(null);
     } else {
       setGiftError("Not enough gems! Visit the store to get more.");

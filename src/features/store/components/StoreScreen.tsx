@@ -15,6 +15,7 @@ import {
   type StoreTab,
 } from "./storeCatalog";
 import { paymentService } from "@/services/paymentService";
+import { useChallengeStore } from "@/store/challengeStore";
 
 const TABS: { id: StoreTab; label: string }[] = [
   { id: "powerups", label: "Powerups" },
@@ -28,6 +29,10 @@ export default function StoreScreen() {
 
   const [activeTab, setActiveTab] = useState<StoreTab>("powerups");
   const [selectedItem, setSelectedItem] = useState<StoreItem | null>(null);
+
+  useEffect(() => {
+    useChallengeStore.getState().addProgress("storeVisited", 1);
+  }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cardStatus, setCardStatus] = useState<{

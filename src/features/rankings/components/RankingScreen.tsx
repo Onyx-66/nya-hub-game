@@ -4,6 +4,7 @@ import { ChevronDown, Globe, Flag, Users, Check, Sparkles } from "lucide-react";
 import NyaLayout from "@/components/nya/NyaLayout";
 import { useAuthStore } from "@/store/authStore";
 import { useLeaderboard, type LeaderboardScope } from "../hooks/useLeaderboard";
+import { useChallengeStore } from "@/store/challengeStore";
 import PodiumDisplay from "./PodiumDisplay";
 import LeaderboardTable from "./LeaderboardTable";
 
@@ -108,6 +109,9 @@ function GameSelector({
 }
 
 export default function RankingScreen() {
+  useEffect(() => {
+    useChallengeStore.getState().addProgress("rankingsVisited", 1);
+  }, []);
   const { user, login } = useAuthStore();
   const [selectedGame, setSelectedGame] = useState<RankingGame>(
     RANKING_GAMES[0],

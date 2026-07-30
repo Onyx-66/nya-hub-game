@@ -13,6 +13,8 @@ import { BLOCK_BLAST_META } from "@/games/block-blast/game.config";
 import { NYA_CRUSH_META } from "@/games/candy-crush/game.config";
 import { COLORING_META } from "@/games/coloring/game.config";
 import DailyBonus from "@/components/nya/DailyBonus";
+import DailyChallengesSection from "@/components/nya/DailyChallengesSection";
+import { useChallengeStore } from "@/store/challengeStore";
 import type { GameMeta } from "@/types";
 
 /** Placeholder games for the hub — uses the GameMeta type */
@@ -95,11 +97,13 @@ export default function HubScreen() {
 
   const featuredGames = games.filter((g) => g.isFeatured && !g.isComingSoon);
 
-  // Play hub music on mount + sync achievements
+  // Play hub music on mount + sync achievements + ensure daily challenges
   useEffect(() => {
     audioService.playMusic("hub-chill", true);
     useAchievementStore.getState().syncFromStores();
     useAchievementStore.getState().addProgress("hubVisited", 1);
+    useChallengeStore.getState().ensureDaily();
+    useChallengeStore.getState().addProgress("hubVisited", 1);
   }, []);
 
   return (
@@ -124,6 +128,9 @@ export default function HubScreen() {
             onPlay={(g) => navigate(`/game/${g.slug}`)}
           />
         )}
+
+        {/* daily challenges */}
+        <DailyChallengesSection />
 
         {/* game grid */}
         <div>

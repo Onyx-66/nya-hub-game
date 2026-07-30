@@ -4,6 +4,7 @@ import { useGameStore } from "@/store/useGameStore";
 import { useAuthStore } from "@/store/authStore";
 import { audioService } from "@/services/audioService";
 import { useAchievementStore } from "@/store/achievementStore";
+import { useChallengeStore } from "@/store/challengeStore";
 import {
   PAWS_PER_GAME_MAX,
   PAWS_PER_SCORE_DIVISOR,
@@ -78,6 +79,15 @@ export function useGameEconomy(gameSlug: string) {
         .filter((k) => k.startsWith("plays:") && ach.progress[k] > 0)
         .length;
       ach.setProgress("uniqueGames", uniqueCount);
+
+      // Track daily challenge progress (same metrics)
+      const ch = useChallengeStore.getState();
+      ch.addProgress("gamesPlayed", 1);
+      ch.addProgress("totalScore", score);
+      ch.addProgress("totalStars", stars);
+      ch.addProgress("pawsEarned", pawsEarned);
+      ch.addProgress(`plays:${gameSlug}`, 1);
+      ch.setProgress("anyHighScore", score);
 
       // Sync gamesPlayed + high score into the auth profile (cross-store).
       const currentUser = useAuthStore.getState().user;
