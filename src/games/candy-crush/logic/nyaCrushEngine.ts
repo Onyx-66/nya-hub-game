@@ -1,10 +1,11 @@
 // =============================================
 // NyaCrushEngine — Pure TypeScript match-3 engine.
 // 8x8 grid, swap adjacent candies, cascade matches, special candies.
+// Specials: striped (row+col clear), bomb (3×3 explosion), rainbow (clear all of type)
 // =============================================
 
 export type CandyType = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple';
-export type SpecialType = 'striped' | 'rainbow';
+export type SpecialType = 'striped' | 'rainbow' | 'bomb';
 
 export interface Candy {
   type: CandyType;
@@ -15,6 +16,7 @@ export interface Candy {
 
 export interface Position { row: number; col: number; }
 export interface SwapResult { valid: boolean; matches: Position[][]; cascaded: boolean; }
+export interface ClearedCandy { row: number; col: number; type: CandyType; }
 
 export type NyaCrushState = 'idle' | 'playing' | 'swapping' | 'gameover' | 'levelcomplete';
 
@@ -56,6 +58,7 @@ export class NyaCrushEngine {
   onBoardUpdate: (() => void) | null = null;
   onGameOver: ((finalScore: number) => void) | null = null;
   onLevelComplete: ((score: number, stars: number) => void) | null = null;
+  onCandiesCleared: ((cleared: ClearedCandy[]) => void) | null = null;
 
   constructor(level: number = 1) {
     this.level = level;
@@ -202,6 +205,7 @@ export class NyaCrushEngine {
   findMatches(): Position[][] {
     const matches: Position[][] = [];
 
+    // Horizontal matches
     for (let r = 0; r < this.ROWS; r++) {
       let c = 0;
       while (c < this.COLS) {
@@ -218,6 +222,7 @@ export class NyaCrushEngine {
       }
     }
 
+    // Vertical matches
     for (let c = 0; c < this.COLS; c++) {
       let r = 0;
       while (r < this.ROWS) {
@@ -241,18 +246,44 @@ export class NyaCrushEngine {
     const toRemove = new Set<string>();
     const toCreateSpecial = new Map<string, SpecialType>();
 
+    // Build position → orientation map to detect L/T intersections
+    const posOrientations = new Map<string, Set<'h' | 'v'>>();
+    for (const group of matches) {
+      if (group.length < 2) continue;
+      const isHorizontal = group[0].row === group[1].row;
+      for (const pos of group) {
+        const key = `${pos.row},${pos.col}`;
+        if (!posOrientations.has(key)) posOrientations.set(key, new Set());
+        posOrientations.get(key)!.add(isHorizontal ? 'h' : 'v');
+      }
+    }
+
+    // Find intersection cells (in both horizontal and vertical matches = L/T shape)
+    const intersections = new Set<string>();
+    for (const [key, orientations] of posOrientations) {
+      if (orientations.size >= 2) intersections.add(key);
+    }
+
+    // Create specials based on match shape
     for (const group of matches) {
       const len = group.length;
-      if (len >= 5) {
+      const intersectionPos = group.find(pos => intersections.has(`${pos.row},${pos.col}`));
+
+      if (intersectionPos && len >= 3) {
+        // L/T shape → bomb at intersection
+        toCreateSpecial.set(`${intersectionPos.row},${intersectionPos.col}`, 'bomb');
+      } else if (len >= 5) {
         const center = group[Math.floor(len / 2)];
         toCreateSpecial.set(`${center.row},${center.col}`, 'rainbow');
       } else if (len >= 4) {
         const center = group[Math.floor(len / 2)];
         toCreateSpecial.set(`${center.row},${center.col}`, 'striped');
       }
+
       for (const pos of group) toRemove.add(`${pos.row},${pos.col}`);
     }
 
+    // Chain reaction: process specials already on the board
     const processed = new Set<string>();
     const queue = [...toRemove];
     while (queue.length > 0) {
@@ -263,6 +294,7 @@ export class NyaCrushEngine {
       const candy = this.board[r][c];
       if (candy?.isSpecial) {
         if (candy.specialType === 'striped') {
+          // Clear entire row + column
           for (let i = 0; i < this.COLS; i++) {
             const k = `${r},${i}`;
             if (!toRemove.has(k)) { toRemove.add(k); queue.push(k); }
@@ -271,7 +303,20 @@ export class NyaCrushEngine {
             const k = `${i},${c}`;
             if (!toRemove.has(k)) { toRemove.add(k); queue.push(k); }
           }
+        } else if (candy.specialType === 'bomb') {
+          // Explode 3×3 area
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              const nr = r + dr;
+              const nc = c + dc;
+              if (nr >= 0 && nr < this.ROWS && nc >= 0 && nc < this.COLS) {
+                const k = `${nr},${nc}`;
+                if (!toRemove.has(k)) { toRemove.add(k); queue.push(k); }
+              }
+            }
+          }
         } else if (candy.specialType === 'rainbow') {
+          // Clear all of the same type
           const targetType = candy.type;
           for (let rr = 0; rr < this.ROWS; rr++) {
             for (let cc = 0; cc < this.COLS; cc++) {
@@ -285,6 +330,8 @@ export class NyaCrushEngine {
       }
     }
 
+    // Actual removal + collect cleared candies for particle effects
+    const clearedCandies: ClearedCandy[] = [];
     let count = 0;
     for (const key of toRemove) {
       const [r, c] = key.split(',').map(Number);
@@ -293,9 +340,15 @@ export class NyaCrushEngine {
         const oldType = this.board[r][c]?.type ?? randomCandyType();
         this.board[r][c] = { type: oldType, id: randomId(), isSpecial: true, specialType };
       } else {
+        const candy = this.board[r][c];
+        if (candy) clearedCandies.push({ row: r, col: c, type: candy.type });
         this.board[r][c] = null;
         count++;
       }
+    }
+
+    if (clearedCandies.length > 0) {
+      this.onCandiesCleared?.(clearedCandies);
     }
 
     return count;

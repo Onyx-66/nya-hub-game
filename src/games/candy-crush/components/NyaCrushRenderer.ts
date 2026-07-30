@@ -1,5 +1,6 @@
 // =============================================
 // NyaCrushRenderer — Canvas drawing for Nya Crush.
+// Draws candies, specials (striped/bomb/rainbow), board, HUD, particles.
 // =============================================
 
 import type { NyaCrushEngine, CandyType, Candy, Position } from '../logic/nyaCrushEngine';
@@ -19,6 +20,17 @@ export interface NyaCrushRendererConfig {
   boardY: number;
   canvasWidth: number;
   canvasHeight: number;
+}
+
+export interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  life: number;
+  maxLife: number;
+  size: number;
 }
 
 const BG_COLOR = '#1a1a2e';
@@ -133,17 +145,23 @@ function drawCandy(
 
   ctx.save();
 
+  // Special candy glow
   if (candy.isSpecial) {
+    const pulse = candy.specialType === 'bomb'
+      ? Math.sin(time * 0.007) * 0.4 + 0.6
+      : Math.sin(time * 0.005) * 0.3 + 0.7;
     ctx.shadowColor = color;
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 14 * pulse;
   }
 
+  // Selected cell pulse
   if (selected) {
     const pulse = Math.sin(time * 0.008) * 0.5 + 0.5;
     ctx.shadowColor = '#ffffff';
-    ctx.shadowBlur = 10 + pulse * 8;
+    ctx.shadowBlur = 12 + pulse * 10;
   }
 
+  // Candy body with radial gradient
   const grad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
   grad.addColorStop(0, lightenColor(color, 0.4));
   grad.addColorStop(1, color);
@@ -152,21 +170,47 @@ function drawCandy(
   SHAPE_DRAWERS[candy.type](ctx, cx, cy, r);
   ctx.fill();
 
+  // Highlight glint
   ctx.shadowBlur = 0;
   ctx.fillStyle = 'rgba(255,255,255,0.35)';
   ctx.beginPath();
   ctx.arc(cx - r * 0.3, cy - r * 0.35, r * 0.22, 0, Math.PI * 2);
   ctx.fill();
 
+  // ── Special candy overlays ──
   if (candy.isSpecial) {
     if (candy.specialType === 'striped') {
-      ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-      ctx.lineWidth = 2;
+      // Horizontal + vertical stripes
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.moveTo(cx - r * 0.6, cy);
       ctx.lineTo(cx + r * 0.6, cy);
       ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r * 0.6);
+      ctx.lineTo(cx, cy + r * 0.6);
+      ctx.stroke();
+    } else if (candy.specialType === 'bomb') {
+      // Concentric ring + inner dot = wrapped/bomb look
+      ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.35, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.15, 0, Math.PI * 2);
+      ctx.fill();
     } else if (candy.specialType === 'rainbow') {
+      // Rainbow swirl center
       const rg = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
       rg.addColorStop(0, '#ff0000');
       rg.addColorStop(0.17, '#ff8800');
@@ -195,7 +239,11 @@ export function renderBoard(
   const { cellSize, boardX, boardY } = config;
   const boardPixelSize = cellSize * 8;
 
-  ctx.fillStyle = BG_COLOR;
+  // Board background with subtle gradient
+  const bgGrad = ctx.createLinearGradient(boardX, boardY, boardX, boardY + boardPixelSize);
+  bgGrad.addColorStop(0, '#1e1e36');
+  bgGrad.addColorStop(1, BG_COLOR);
+  ctx.fillStyle = bgGrad;
   roundRect(ctx, boardX - 6, boardY - 6, boardPixelSize + 12, boardPixelSize + 12, 12);
   ctx.fill();
 
@@ -204,7 +252,9 @@ export function renderBoard(
       const x = boardX + c * cellSize;
       const y = boardY + r * cellSize;
 
-      ctx.fillStyle = 'rgba(255,255,255,0.04)';
+      // Alternating cell backgrounds for checkerboard effect
+      const isLight = (r + c) % 2 === 0;
+      ctx.fillStyle = isLight ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)';
       roundRect(ctx, x + 1, y + 1, cellSize - 2, cellSize - 2, 4);
       ctx.fill();
 
@@ -241,6 +291,27 @@ export function renderSwapAnimation(
   }
   if (candy2) {
     drawCandy(ctx, candy2, toX + (fromX - toX) * e, toY + (fromY - toY) * e, cellSize, false, time);
+  }
+}
+
+export function renderParticles(
+  ctx: CanvasRenderingContext2D,
+  particles: Particle[],
+  dt: number,
+): void {
+  for (const p of particles) {
+    const alpha = Math.max(0, 1 - p.life / p.maxLife);
+    if (alpha <= 0) continue;
+    const scale = Math.max(0.2, alpha);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * scale, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 }
 

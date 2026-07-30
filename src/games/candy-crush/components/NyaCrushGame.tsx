@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { RotateCcw, ChevronRight } from "lucide-react";
 import { NyaCrushEngine, type Position } from "../logic/nyaCrushEngine";
 import {
+  CANDY_COLORS,
   createRendererConfig,
   renderBoard,
   renderHUD,
   renderSwapAnimation,
+  renderParticles,
   type NyaCrushRendererConfig,
+  type Particle,
 } from "./NyaCrushRenderer";
 import { useGameEconomy } from "@/hooks/useGameEconomy";
 import { useEconomyStore } from "@/store/economyStore";
@@ -23,6 +26,8 @@ interface ScorePopup {
   startTime: number;
 }
 
+const DRAG_THRESHOLD = 14;
+
 export default function NyaCrushGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<NyaCrushEngine | null>(null);
@@ -30,8 +35,13 @@ export default function NyaCrushGame() {
   const configRef = useRef<NyaCrushRendererConfig>(createRendererConfig());
   const popupIdRef = useRef(0);
   const popupsRef = useRef<ScorePopup[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
   const swapAnimRef = useRef<{ from: Position; to: Position; startTime: number } | null>(null);
   const inputLockedRef = useRef(false);
+  const prevTimeRef = useRef(0);
+
+  // Drag state for swipe-to-swap
+  const dragRef = useRef<{ start: Position; startX: number; startY: number; swapped: boolean } | null>(null);
 
   const [level, setLevel] = useState(1);
   const [restartKey, setRestartKey] = useState(0);
@@ -51,6 +61,31 @@ export default function NyaCrushGame() {
     const engine = new NyaCrushEngine(level);
     engine.onScoreChange = (s) => setScore(s);
     engine.onBoardUpdate = () => setMoves(engine.moves);
+    engine.onCandiesCleared = (cleared) => {
+      const config = configRef.current;
+      const newParticles: Particle[] = [];
+      for (const cell of cleared) {
+        const px = config.boardX + cell.col * config.cellSize + config.cellSize / 2;
+        const py = config.boardY + cell.row * config.cellSize + config.cellSize / 2;
+        const color = CANDY_COLORS[cell.type];
+        // Spawn 6 particles per cleared candy in a burst
+        for (let i = 0; i < 6; i++) {
+          const angle = (Math.PI * 2 * i) / 6 + Math.random() * 0.4;
+          const speed = 1.5 + Math.random() * 2.5;
+          newParticles.push({
+            x: px,
+            y: py,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 1.5,
+            color,
+            life: 0,
+            maxLife: 600 + Math.random() * 300,
+            size: 3 + Math.random() * 4,
+          });
+        }
+      }
+      particlesRef.current = [...particlesRef.current, ...newParticles];
+    };
     engine.onGameOver = (finalScore) => {
       onGameEnd(finalScore, level, 0);
       addPaws(Math.floor(finalScore / 20), "Nya Crush reward");
@@ -75,8 +110,10 @@ export default function NyaCrushGame() {
     setStars(0);
     setIsNewHighScore(false);
     popupsRef.current = [];
+    particlesRef.current = [];
     swapAnimRef.current = null;
     inputLockedRef.current = false;
+    prevTimeRef.current = 0;
 
     return () => cancelAnimationFrame(animationFrameRef.current);
   }, [level, restartKey, onGameStart, onGameEnd, addPaws, addGems, highScore]);
@@ -89,6 +126,8 @@ export default function NyaCrushGame() {
     if (!ctx) return;
     const config = configRef.current;
     const time = performance.now();
+    const dt = Math.min(32, time - (prevTimeRef.current || time));
+    prevTimeRef.current = time;
 
     ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
     renderHUD(ctx, engine.score, engine.moves, engine.targetScore, config);
@@ -124,6 +163,17 @@ export default function NyaCrushGame() {
       renderBoard(ctx, engine, config, time);
     }
 
+    // Update + render particles
+    const activeParticles = particlesRef.current.filter((p) => p.life < p.maxLife);
+    for (const p of activeParticles) {
+      p.life += dt;
+      p.x += p.vx * (dt / 16);
+      p.y += p.vy * (dt / 16);
+      p.vy += 0.1 * (dt / 16);
+    }
+    particlesRef.current = activeParticles;
+    renderParticles(ctx, activeParticles, dt);
+
     // Score popups
     const activePopups = popupsRef.current.filter((p) => time - p.startTime < 1000);
     popupsRef.current = activePopups;
@@ -150,7 +200,7 @@ export default function NyaCrushGame() {
     return () => cancelAnimationFrame(animationFrameRef.current);
   }, [draw]);
 
-  // ── Input ──
+  // ── Input: supports both tap-to-swap and drag-to-swap ──
   const getGridPosition = (clientX: number, clientY: number): Position | null => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
@@ -164,6 +214,7 @@ export default function NyaCrushGame() {
     return { row, col };
   };
 
+  // Tap-to-swap logic (select first, then tap adjacent to swap)
   const handleCellClick = (clientX: number, clientY: number) => {
     if (inputLockedRef.current) return;
     const engine = engineRef.current;
@@ -189,11 +240,52 @@ export default function NyaCrushGame() {
     }
   };
 
-  const onMouseDown = (e: React.MouseEvent) => handleCellClick(e.clientX, e.clientY);
-  const onTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
-    const t = e.touches[0];
-    handleCellClick(t.clientX, t.clientY);
+  // Drag-to-swap (swipe from one candy to an adjacent one)
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (inputLockedRef.current) return;
+    const engine = engineRef.current;
+    if (!engine || engine.state !== "playing") return;
+    const pos = getGridPosition(e.clientX, e.clientY);
+    if (!pos) return;
+
+    dragRef.current = { start: pos, startX: e.clientX, startY: e.clientY, swapped: false };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragRef.current || dragRef.current.swapped) return;
+    if (inputLockedRef.current) return;
+
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+
+    if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+
+    const { start } = dragRef.current;
+    let target: Position;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      target = { row: start.row, col: start.col + (dx > 0 ? 1 : -1) };
+    } else {
+      target = { row: start.row + (dy > 0 ? 1 : -1), col: start.col };
+    }
+
+    if (target.row < 0 || target.row >= 8 || target.col < 0 || target.col >= 8) return;
+
+    const engine = engineRef.current;
+    if (!engine) return;
+    engine.selectedCell = null;
+    dragRef.current.swapped = true;
+    inputLockedRef.current = true;
+    swapAnimRef.current = { from: start, to: target, startTime: performance.now() };
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    // If no drag swap happened, treat as tap (click-to-swap)
+    if (!dragRef.current.swapped) {
+      handleCellClick(e.clientX, e.clientY);
+    }
+    dragRef.current = null;
   };
 
   const retryLevel = () => setRestartKey((k) => k + 1);
@@ -218,8 +310,9 @@ export default function NyaCrushGame() {
           height={config.canvasHeight}
           className="block w-full h-auto rounded-2xl shadow-2xl"
           style={{ aspectRatio: `${config.canvasWidth} / ${config.canvasHeight}` }}
-          onMouseDown={onMouseDown}
-          onTouchStart={onTouchStart}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
           aria-label="Nya Crush game board"
           role="img"
         />
@@ -268,7 +361,7 @@ export default function NyaCrushGame() {
       </div>
 
       <p className="text-xs text-muted-foreground text-center mt-2">
-        Tap a candy, then tap an adjacent one to swap
+        Tap two candies to swap, or drag a candy to swap with an adjacent one
       </p>
     </div>
   );
