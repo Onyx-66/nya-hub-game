@@ -7,6 +7,7 @@ import { useLeaderboard, type LeaderboardScope } from "../hooks/useLeaderboard";
 import { useChallengeStore } from "@/store/challengeStore";
 import PodiumDisplay from "./PodiumDisplay";
 import LeaderboardTable from "./LeaderboardTable";
+import FriendsLeaderboard from "./FriendsLeaderboard";
 
 interface RankingGame {
   slug: string;
@@ -33,7 +34,7 @@ const SCOPES: {
 }[] = [
   { id: "global", label: "Global", icon: Globe },
   { id: "national", label: "National", icon: Flag },
-  { id: "friends", label: "Friends", icon: Users, comingSoon: true },
+  { id: "friends", label: "Friends", icon: Users },
 ];
 
 function GameSelector({
@@ -170,17 +171,9 @@ export default function RankingScreen() {
           })}
         </div>
 
-        {/* ── Friends coming-soon state ── */}
+        {/* ── Friends leaderboard ── */}
         {scope === "friends" ? (
-          <div className="text-center py-16">
-            <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <h3 className="font-heading font-bold text-lg text-foreground">
-              Friends Leaderboard
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
-              Connect with friends to see who's the top cat. Coming soon!
-            </p>
-          </div>
+          <FriendsLeaderboard gameSlug={selectedGame.slug} />
         ) : (
           <>
             {/* ── Podium ── */}

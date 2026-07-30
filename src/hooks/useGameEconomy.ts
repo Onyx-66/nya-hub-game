@@ -92,18 +92,20 @@ export function useGameEconomy(gameSlug: string) {
       // Sync gamesPlayed + high score into the auth profile (cross-store).
       const currentUser = useAuthStore.getState().user;
       if (currentUser) {
-        const prevStats = currentUser.gameStats;
+        const prevStats = currentUser.gameStats ?? { gamesPlayed: 0, highScores: {}, totalPlayTime: 0, achievements: [] };
         updateProfile({
           gameStats: {
             ...prevStats,
             gamesPlayed: (prevStats.gamesPlayed ?? 0) + 1,
             highScores: {
-              ...prevStats.highScores,
-              [gameSlug]: Math.max(prevStats.highScores[gameSlug] ?? 0, score),
+              ...(prevStats.highScores ?? {}),
+              [gameSlug]: Math.max(prevStats.highScores?.[gameSlug] ?? 0, score),
             },
           },
         });
       }
+      // Track global play count per game for Hot/Trend badges
+      useGameStore.getState().addPlay(gameSlug);
     },
     [gameSlug, addPaws, addGems, getHighScore, endSession, updateProfile],
   );

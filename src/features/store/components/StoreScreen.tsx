@@ -11,9 +11,11 @@ import {
   POWERUP_ITEMS,
   CURRENCY_ITEMS,
   SPECIAL_ITEMS,
+  LIMITED_TIME_ITEM,
   type StoreItem,
   type StoreTab,
 } from "./storeCatalog";
+import LimitedTimeOffer from "./LimitedTimeOffer";
 import { paymentService } from "@/services/paymentService";
 import { useChallengeStore } from "@/store/challengeStore";
 
@@ -129,8 +131,17 @@ export default function StoreScreen() {
   return (
     <NyaLayout title="Store" showBack={false}>
       {/* ── Free Rewards (rewarded ads) ── */}
-      <div className="mb-6">
+      <div className="mb-5">
         <FreeRewardsSection />
+      </div>
+
+      {/* ── Limited-time offer with countdown ── */}
+      <div className="mb-5">
+        <LimitedTimeOffer
+          item={LIMITED_TIME_ITEM}
+          durationHours={12}
+          onPurchase={(item) => setSelectedItem(item)}
+        />
       </div>
 
       {/* ── Tab switcher ── */}
@@ -175,7 +186,7 @@ export default function StoreScreen() {
 
           {activeTab === "currency" && (
             <div className="space-y-6">
-              {/* Paws section */}
+              {/* Paws section — sorted cheapest → premium */}
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <PawPrint className="w-4 h-4 text-pink-400" />
@@ -184,13 +195,14 @@ export default function StoreScreen() {
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  {CURRENCY_ITEMS.filter((i) => i.section === "paws").map((item) =>
-                    renderCard(item, "row"),
-                  )}
+                  {CURRENCY_ITEMS
+                    .filter((i) => i.section === "paws")
+                    .sort((a, b) => a.cost - b.cost)
+                    .map((item) => renderCard(item, "row"))}
                 </div>
               </section>
 
-              {/* Gems section */}
+              {/* Gems section — sorted cheapest → premium */}
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <Gem className="w-4 h-4 text-cyan-300" />
@@ -199,9 +211,10 @@ export default function StoreScreen() {
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  {CURRENCY_ITEMS.filter((i) => i.section === "gems").map((item) =>
-                    renderCard(item, "row"),
-                  )}
+                  {CURRENCY_ITEMS
+                    .filter((i) => i.section === "gems")
+                    .sort((a, b) => a.cost - b.cost)
+                    .map((item) => renderCard(item, "row"))}
                 </div>
               </section>
             </div>

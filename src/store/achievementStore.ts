@@ -125,12 +125,12 @@ export const useAchievementStore = create<AchievementState>()(
         if (!auth) return;
 
         const updates: Record<string, number> = {
-          level: auth.level,
-          xp: auth.xp,
-          titlesEarned: auth.titles.length,
-          pawsBalance: economy.paws,
-          gemsBalance: economy.gems,
-          friendsCount: friends.friends.length,
+          level: auth.level ?? 1,
+          xp: auth.xp ?? 0,
+          titlesEarned: (auth.titles ?? []).length,
+          pawsBalance: economy.paws ?? 0,
+          gemsBalance: economy.gems ?? 0,
+          friendsCount: (friends.friends ?? []).length,
           bannersOwned: auth.bannerId ? 1 : 0,
           achievementsUnlocked: get().unlocked.length,
         };

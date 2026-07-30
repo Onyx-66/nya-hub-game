@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import NyaLayout from "@/components/nya/NyaLayout";
 import GameGrid from "@/components/nya/GameGrid";
+import type { GameBadge } from "@/components/nya/GameCard";
 import FeaturedBanner from "@/components/nya/FeaturedBanner";
 import { audioService } from "@/services/audioService";
 import { useAuthStore } from "@/store/authStore";
@@ -95,8 +96,38 @@ export default function HubScreen() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const highScores = useGameStore((s) => s.highScores);
+  const playCounts = useGameStore((s) => s.playCounts);
 
   const featuredGames = games.filter((g) => g.isFeatured && !g.isComingSoon);
+
+  // Compute Hot/Trend badges from global playtime (user plays + baseline).
+  // #1 = Trend, #2 & #3 = Hot.
+  const badges = useMemo<Record<string, GameBadge>>(() => {
+    // Baseline "global" play counts so badges exist even before the user plays.
+    const BASELINE: Record<string, number> = {
+      snake: 340,
+      "block-blast": 280,
+      "candy-crush": 250,
+      "angry-birds": 210,
+      "quiz-sword": 180,
+      "water-sort": 150,
+      meowdoku: 120,
+      coloring: 90,
+    };
+    const combined: Record<string, number> = {};
+    for (const g of games) {
+      combined[g.slug] = (BASELINE[g.slug] ?? 0) + (playCounts[g.slug] ?? 0);
+    }
+    const sorted = [...games]
+      .filter((g) => !g.isComingSoon)
+      .sort((a, b) => (combined[b.slug] ?? 0) - (combined[a.slug] ?? 0));
+
+    const result: Record<string, GameBadge> = {};
+    if (sorted[0]) result[sorted[0].slug] = "trend";
+    if (sorted[1]) result[sorted[1].slug] = "hot";
+    if (sorted[2]) result[sorted[2].slug] = "hot";
+    return result;
+  }, [playCounts]);
 
   // Play hub music on mount + sync achievements + ensure daily challenges
   useEffect(() => {
@@ -146,6 +177,7 @@ export default function HubScreen() {
           <GameGrid
             games={games}
             highScores={highScores}
+            badges={badges}
             onPlay={(g) => navigate(`/game/${g.slug}`)}
           />
         </div>

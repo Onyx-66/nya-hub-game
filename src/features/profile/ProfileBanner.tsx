@@ -3,6 +3,7 @@ import { Pencil, Calendar } from "lucide-react";
 import CatAvatar from "@/components/nya/CatAvatar";
 import { useAuthStore } from "@/store/authStore";
 import { getBanner, getTitle } from "@/data/profileCatalog";
+import PhotoUploadButton from "./PhotoUploadButton";
 
 interface ProfileBannerProps {
   onEditAvatar: () => void;
@@ -28,7 +29,7 @@ export default function ProfileBanner({ onEditAvatar, onEditBio }: ProfileBanner
     ((user.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100
   );
 
-  const joinedDate = new Date(user.joinedDate).toLocaleDateString("en-US", {
+  const joinedDate = new Date(user.joinedDate ?? new Date().toISOString()).toLocaleDateString("en-US", {
     month: "short",
     year: "numeric",
   });
@@ -51,16 +52,29 @@ export default function ProfileBanner({ onEditAvatar, onEditBio }: ProfileBanner
       {/* Avatar + info */}
       <div className="bg-card px-5 pb-5 -mt-12 relative">
         <div className="flex items-end justify-between">
-          <button
-            onClick={onEditAvatar}
-            className="relative group rounded-full ring-4 ring-card"
-            aria-label="Change avatar"
-          >
-            <CatAvatar avatarId={parseInt(user.avatar) || 1} size={88} className="ring-2 ring-primary/40" />
-            <span className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-lg group-active:scale-90 transition-transform">
+          <div className="relative group rounded-full ring-4 ring-card">
+            {user.customAvatarUrl ? (
+              <img
+                src={user.customAvatarUrl}
+                alt={user.pseudonym}
+                className="w-[88px] h-[88px] rounded-full object-cover ring-2 ring-primary/40"
+              />
+            ) : (
+              <CatAvatar avatarId={parseInt(user.avatar) || 1} size={88} className="ring-2 ring-primary/40" />
+            )}
+            {/* Edit avatar (picks from preset cats) */}
+            <button
+              onClick={onEditAvatar}
+              className="absolute bottom-0 left-0 w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-lg group-active:scale-90 transition-transform"
+              aria-label="Choose avatar"
+            >
               <Pencil className="w-3.5 h-3.5 text-primary-foreground" />
-            </span>
-          </button>
+            </button>
+            {/* Upload photo from device */}
+            <div className="absolute bottom-0 right-0">
+              <PhotoUploadButton />
+            </div>
+          </div>
         </div>
 
         <div className="mt-3">

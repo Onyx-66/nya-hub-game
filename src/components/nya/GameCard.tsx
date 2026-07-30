@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Lock, Play, Star, Sparkles, PawPrint, Feather, Sword, LayoutGrid, Droplet, Gem, Palette, PaintBucket } from "lucide-react";
+import { Lock, Play, Star, Sparkles, Flame, TrendingUp, PawPrint, Feather, Sword, LayoutGrid, Droplet, Gem, Palette, PaintBucket } from "lucide-react";
 import type { ComponentType, CSSProperties } from "react";
 import type { GameMeta } from "@/types";
 import { scoreToStars } from "@/hooks/useGameEconomy";
 import DifficultyDots from "@/components/nya/DifficultyDots";
 
+export type GameBadge = "trend" | "hot" | null;
+
 interface GameCardProps {
   game: GameMeta;
   index?: number;
   highScore?: number;
+  badge?: GameBadge;
   onPlay?: (game: GameMeta) => void;
 }
 
@@ -86,7 +89,7 @@ function GameIcon({ game }: { game: GameMeta }) {
  * featured badge, and a Play button. Shows a "Coming Soon" lock state when
  * isComingSoon is true, and star ratings for played games.
  */
-export default function GameCard({ game, index = 0, highScore, onPlay }: GameCardProps) {
+export default function GameCard({ game, index = 0, highScore, badge, onPlay }: GameCardProps) {
   const gradient = categoryGradients[game.category] ?? "from-pink-400 to-violet-500";
   const locked = game.isComingSoon;
   const stars = scoreToStars(highScore ?? 0);
@@ -110,13 +113,23 @@ export default function GameCard({ game, index = 0, highScore, onPlay }: GameCar
         <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/10 blur-xl" />
         <div className="absolute -bottom-10 -left-6 w-32 h-32 rounded-full bg-black/10 blur-xl" />
 
-        {/* category badge + featured + coming soon */}
+        {/* category badge + featured + coming soon + hot/trend */}
         <div className="relative flex items-start justify-between">
           <span className="text-[10px] font-heading uppercase tracking-wider bg-black/25 backdrop-blur-sm text-white px-2.5 py-1 rounded-full">
             {game.category}
           </span>
           <div className="flex items-center gap-1.5">
-            {game.isFeatured && !locked && (
+            {badge === "trend" && (
+              <span className="flex items-center gap-0.5 text-[9px] font-bold bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-2 py-1 rounded-full shadow-md">
+                <TrendingUp className="w-2.5 h-2.5" /> Trend
+              </span>
+            )}
+            {badge === "hot" && (
+              <span className="flex items-center gap-0.5 text-[9px] font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-1 rounded-full shadow-md">
+                <Flame className="w-2.5 h-2.5" /> Hot
+              </span>
+            )}
+            {game.isFeatured && !locked && badge === null && (
               <span className="flex items-center gap-0.5 text-[9px] font-bold bg-gold/90 text-black px-2 py-1 rounded-full">
                 <Sparkles className="w-2.5 h-2.5" /> Featured
               </span>

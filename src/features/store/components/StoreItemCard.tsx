@@ -97,11 +97,16 @@ export default function StoreItemCard({
         </div>
 
         <div className={isRow ? "flex-1 min-w-0" : "w-full"}>
-          <div className="flex items-center gap-2 justify-center">
+          <div className="flex items-center gap-2 justify-center flex-wrap">
             <h4 className="font-heading font-bold text-sm truncate">{item.name}</h4>
             {item.badge && (
               <span className="bg-white/25 backdrop-blur-sm text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full leading-none">
                 {item.badge}
+              </span>
+            )}
+            {item.bonusPercent && (
+              <span className="bg-emerald-400/80 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full leading-none">
+                +{item.bonusPercent}%
               </span>
             )}
           </div>

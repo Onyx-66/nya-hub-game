@@ -9,6 +9,9 @@ import {
   Zap,
   PawPrint,
   Gem,
+  Gift,
+  Sparkles,
+  Rocket,
 } from "lucide-react";
 
 export type CurrencyType = "paws" | "gems" | "real";
@@ -25,12 +28,18 @@ export interface StoreItem {
   /** Tailwind gradient classes, e.g. "from-violet-500 to-purple-700" */
   gradient: string;
   badge?: string;
+  /** Bonus percentage displayed as "+X% More" */
+  bonusPercent?: number;
   /** For currency packs purchased with real money: what they grant */
   grant?: { currency: "paws" | "gems"; amount: number };
   /** Section label when grouped inside the currency tab */
   section?: "paws" | "gems";
   /** Shimmer overlay flag (remove-ads card) */
   sparkle?: boolean;
+  /** One-time starter pack for new players */
+  isStarterPack?: boolean;
+  /** Limited-time deal */
+  isLimitedTime?: boolean;
 }
 
 export const POWERUP_ITEMS: StoreItem[] = [
@@ -77,83 +86,146 @@ export const POWERUP_ITEMS: StoreItem[] = [
 ];
 
 export const CURRENCY_ITEMS: StoreItem[] = [
+  // ── Paws tiers (cheapest → most premium) ──
   {
-    id: "paw-pack-small",
-    name: "Paw Pack Small",
-    description: "500 Paws",
+    id: "paw-pack-starter",
+    name: "Paw Starter",
+    description: "300 Paws",
     icon: PawPrint,
     cost: 0.99,
     currency: "real",
     tab: "currency",
-    gradient: "from-pink-400 to-rose-600",
-    grant: { currency: "paws", amount: 500 },
+    gradient: "from-pink-400 to-rose-500",
+    grant: { currency: "paws", amount: 300 },
+    section: "paws",
+  },
+  {
+    id: "paw-pack-small",
+    name: "Paw Pack",
+    description: "700 Paws",
+    icon: PawPrint,
+    cost: 1.99,
+    currency: "real",
+    tab: "currency",
+    gradient: "from-pink-400 to-rose-500",
+    bonusPercent: 17,
+    grant: { currency: "paws", amount: 700 },
     section: "paws",
   },
   {
     id: "paw-pack-medium",
-    name: "Paw Pack Medium",
-    description: "1,200 Paws",
+    name: "Paw Bundle",
+    description: "1,500 Paws",
     icon: PawPrint,
-    cost: 1.99,
+    cost: 3.99,
     currency: "real",
     tab: "currency",
     gradient: "from-pink-400 to-rose-600",
-    badge: "Best Value",
-    grant: { currency: "paws", amount: 1200 },
+    bonusPercent: 25,
+    grant: { currency: "paws", amount: 1500 },
     section: "paws",
   },
   {
     id: "paw-pack-large",
-    name: "Paw Pack Large",
-    description: "3,000 Paws",
+    name: "Paw Vault",
+    description: "3,500 Paws",
     icon: PawPrint,
-    cost: 4.99,
+    cost: 6.99,
     currency: "real",
     tab: "currency",
-    gradient: "from-pink-400 to-rose-600",
-    grant: { currency: "paws", amount: 3000 },
+    gradient: "from-pink-500 to-rose-600",
+    badge: "Best Value",
+    bonusPercent: 40,
+    grant: { currency: "paws", amount: 3500 },
     section: "paws",
   },
+
+  // ── Gem tiers (cheapest → most premium) ──
   {
-    id: "gem-pack-small",
-    name: "Gem Pack Small",
-    description: "50 Gems",
+    id: "gem-pack-starter",
+    name: "Gem Starter",
+    description: "30 Gems",
     icon: Gem,
     cost: 0.99,
     currency: "real",
     tab: "currency",
-    gradient: "from-cyan-400 to-teal-600",
-    grant: { currency: "gems", amount: 50 },
+    gradient: "from-cyan-400 to-teal-500",
+    grant: { currency: "gems", amount: 30 },
     section: "gems",
   },
   {
-    id: "gem-pack-medium",
-    name: "Gem Pack Medium",
-    description: "120 Gems",
+    id: "gem-pack-small",
+    name: "Gem Pack",
+    description: "80 Gems",
     icon: Gem,
     cost: 1.99,
     currency: "real",
     tab: "currency",
+    gradient: "from-cyan-400 to-teal-500",
+    bonusPercent: 14,
+    grant: { currency: "gems", amount: 80 },
+    section: "gems",
+  },
+  {
+    id: "gem-pack-medium",
+    name: "Gem Bundle",
+    description: "170 Gems",
+    icon: Gem,
+    cost: 3.99,
+    currency: "real",
+    tab: "currency",
     gradient: "from-cyan-400 to-teal-600",
-    badge: "Popular",
-    grant: { currency: "gems", amount: 120 },
+    bonusPercent: 21,
+    grant: { currency: "gems", amount: 170 },
     section: "gems",
   },
   {
     id: "gem-pack-large",
-    name: "Gem Pack Large",
-    description: "300 Gems",
+    name: "Gem Vault",
+    description: "400 Gems",
     icon: Gem,
-    cost: 4.99,
+    cost: 6.99,
     currency: "real",
     tab: "currency",
-    gradient: "from-cyan-400 to-teal-600",
-    grant: { currency: "gems", amount: 300 },
+    gradient: "from-cyan-500 to-teal-600",
+    badge: "Best Value",
+    bonusPercent: 43,
+    grant: { currency: "gems", amount: 400 },
     section: "gems",
   },
 ];
 
+/** Limited-time daily deal */
+export const LIMITED_TIME_ITEM: StoreItem = {
+  id: "daily-mega-bundle",
+  name: "Mega Daily Bundle",
+  description: "2,000 Paws + 60 Gems",
+  icon: Sparkles,
+  cost: 2.99,
+  currency: "real",
+  tab: "currency",
+  gradient: "from-violet-500 via-fuchsia-500 to-pink-500",
+  badge: "70% OFF",
+  isLimitedTime: true,
+};
+
+/** One-time starter pack for new players */
+export const STARTER_PACK_ITEM: StoreItem = {
+  id: "starter-pack",
+  name: "Starter Pack",
+  description: "1,000 Paws + 25 Gems + Extra Life",
+  icon: Gift,
+  cost: 1.99,
+  currency: "real",
+  tab: "special",
+  gradient: "from-emerald-400 to-teal-600",
+  badge: "One-Time",
+  isStarterPack: true,
+  sparkle: true,
+};
+
 export const SPECIAL_ITEMS: StoreItem[] = [
+  STARTER_PACK_ITEM,
   {
     id: "remove-ads",
     name: "Remove Ads Forever",
@@ -184,5 +256,15 @@ export const SPECIAL_ITEMS: StoreItem[] = [
     currency: "gems",
     tab: "special",
     gradient: "from-indigo-500 to-blue-700",
+  },
+  {
+    id: "xp-booster",
+    name: "XP Booster",
+    description: "Earn 2x XP for 24 hours.",
+    icon: Rocket,
+    cost: 200,
+    currency: "gems",
+    tab: "special",
+    gradient: "from-violet-500 to-purple-700",
   },
 ];

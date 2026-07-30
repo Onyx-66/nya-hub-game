@@ -19,19 +19,15 @@ import AchievementsScreen from '@/features/achievements/AchievementsScreen';
 import ChallengesScreen from '@/features/challenges/ChallengesScreen';
 import AchievementNotification from '@/components/nya/AchievementNotification';
 import LoginModal from '@/features/landing/LoginModal';
+import ErrorBoundary from '@/components/nya/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
 // Add page imports here
 
 function RequireAuth({ children }) {
   const user = useAuthStore((s) => s.user);
-  const [showLogin, setShowLogin] = useState(false);
-
-  useEffect(() => {
-    if (!user) setShowLogin(true);
-  }, [user]);
 
   if (!user) {
-    return <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onLogin={() => setShowLogin(false)} />;
+    return <LoginModal isOpen={true} onClose={() => window.history.back()} onLogin={() => {}} />;
   }
 
   return <>{children}</>;
@@ -65,6 +61,7 @@ const AuthenticatedApp = () => {
   return (
     <>
       <div key={location.pathname} className="animate-page-enter">
+        <ErrorBoundary>
         <Routes location={location}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/hub" element={<RequireAuth><HubScreen /></RequireAuth>} />
@@ -78,6 +75,7 @@ const AuthenticatedApp = () => {
           <Route path="/game/:slug" element={<RequireAuth><GameWrapper /></RequireAuth>} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
+        </ErrorBoundary>
       </div>
       <AchievementNotification />
     </>
