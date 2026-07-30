@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { RotateCcw, ChevronRight } from "lucide-react";
-import { NyaCrushEngine, type Position } from "../logic/nyaCrushEngine";
+import { RotateCcw, ChevronRight, Play, Sparkles, Zap, Bomb, Rainbow } from "lucide-react";
+import { NyaCrushEngine, type Position, type Candy } from "../logic/nyaCrushEngine";
 import {
   CANDY_COLORS,
   createRendererConfig,
@@ -17,6 +17,15 @@ import { useEconomyStore } from "@/store/economyStore";
 import { formatNumber } from "@/utils/formatting";
 
 const GAME_ID = "candy-crush";
+const SAVE_KEY = "nya-crush-save";
+const DRAG_THRESHOLD = 14;
+
+interface SavedState {
+  board: (Candy | null)[][];
+  score: number;
+  moves: number;
+  level: number;
+}
 
 interface ScorePopup {
   id: number;
@@ -25,8 +34,6 @@ interface ScorePopup {
   value: number;
   startTime: number;
 }
-
-const DRAG_THRESHOLD = 14;
 
 export default function NyaCrushGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -40,8 +47,10 @@ export default function NyaCrushGame() {
   const inputLockedRef = useRef(false);
   const prevTimeRef = useRef(0);
 
-  // Drag state for swipe-to-swap
   const dragRef = useRef<{ start: Position; startX: number; startY: number; swapped: boolean } | null>(null);
+
+  const pendingRestoreRef = useRef<SavedState | null>(null);
+  const gameStartedRef = useRef(false);
 
   const [level, setLevel] = useState(1);
   const [restartKey, setRestartKey] = useState(0);
@@ -51,6 +60,20 @@ export default function NyaCrushGame() {
   const [target, setTarget] = useState(1000);
   const [stars, setStars] = useState(0);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
+  const [savedInfo, setSavedInfo] = useState<{ level: number; score: number; moves: number } | null>(() => {
+    try {
+      const saved = localStorage.getItem(SAVE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.moves > 0 && data.board) {
+          return { level: data.level, score: data.score, moves: data.moves };
+        }
+      }
+    } catch { /* ignore */ }
+    return null;
+  });
+  const [showContinue, setShowContinue] = useState(() => savedInfo !== null);
+  const [showHelp, setShowHelp] = useState(false);
 
   const navigate = useNavigate();
   const { onGameStart, onGameEnd, highScore } = useGameEconomy(GAME_ID);
@@ -68,17 +91,14 @@ export default function NyaCrushGame() {
         const px = config.boardX + cell.col * config.cellSize + config.cellSize / 2;
         const py = config.boardY + cell.row * config.cellSize + config.cellSize / 2;
         const color = CANDY_COLORS[cell.type];
-        // Spawn 6 particles per cleared candy in a burst
         for (let i = 0; i < 6; i++) {
           const angle = (Math.PI * 2 * i) / 6 + Math.random() * 0.4;
           const speed = 1.5 + Math.random() * 2.5;
           newParticles.push({
-            x: px,
-            y: py,
+            x: px, y: py,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed - 1.5,
-            color,
-            life: 0,
+            color, life: 0,
             maxLife: 600 + Math.random() * 300,
             size: 3 + Math.random() * 4,
           });
@@ -87,12 +107,14 @@ export default function NyaCrushGame() {
       particlesRef.current = [...particlesRef.current, ...newParticles];
     };
     engine.onGameOver = (finalScore) => {
+      localStorage.removeItem(SAVE_KEY);
       onGameEnd(finalScore, level, 0);
       addPaws(Math.floor(finalScore / 20), "Nya Crush reward");
       setIsNewHighScore(finalScore > highScore);
       setGameState("gameover");
     };
     engine.onLevelComplete = (finalScore, s) => {
+      localStorage.removeItem(SAVE_KEY);
       setStars(s);
       setIsNewHighScore(finalScore > highScore);
       onGameEnd(finalScore, level, s);
@@ -102,8 +124,16 @@ export default function NyaCrushGame() {
     };
     engineRef.current = engine;
     engine.start();
+
+    if (pendingRestoreRef.current) {
+      engine.restoreState(pendingRestoreRef.current);
+      setScore(engine.score);
+      setMoves(engine.moves);
+      pendingRestoreRef.current = null;
+    }
+
     onGameStart();
-    setScore(0);
+    setScore(engine.score);
     setMoves(engine.maxMoves);
     setTarget(engine.targetScore);
     setGameState("playing");
@@ -115,8 +145,25 @@ export default function NyaCrushGame() {
     inputLockedRef.current = false;
     prevTimeRef.current = 0;
 
+    // Set gameStartedRef based on whether a Continue screen is showing
+    gameStartedRef.current = !showContinue;
+
     return () => cancelAnimationFrame(animationFrameRef.current);
   }, [level, restartKey, onGameStart, onGameEnd, addPaws, addGems, highScore]);
+
+  // Save state on unmount (only if actively playing)
+  useEffect(() => {
+    return () => {
+      const engine = engineRef.current;
+      if (engine && gameStartedRef.current && engine.state === "playing") {
+        try {
+          localStorage.setItem(SAVE_KEY, JSON.stringify(engine.serialize()));
+        } catch {
+          // ignore save errors
+        }
+      }
+    };
+  }, []);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -145,6 +192,8 @@ export default function NyaCrushGame() {
       if (progress >= 1) {
         const { from, to } = swapAnimRef.current;
         swapAnimRef.current = null;
+        // Reset input lock BEFORE swapCells so the game never freezes
+        inputLockedRef.current = false;
         const prevScore = engine.score;
         engine.swapCells(from, to);
         const scoreGain = engine.score - prevScore;
@@ -157,13 +206,11 @@ export default function NyaCrushGame() {
             startTime: time,
           }];
         }
-        inputLockedRef.current = false;
       }
     } else {
       renderBoard(ctx, engine, config, time);
     }
 
-    // Update + render particles
     const activeParticles = particlesRef.current.filter((p) => p.life < p.maxLife);
     for (const p of activeParticles) {
       p.life += dt;
@@ -174,7 +221,6 @@ export default function NyaCrushGame() {
     particlesRef.current = activeParticles;
     renderParticles(ctx, activeParticles, dt);
 
-    // Score popups
     const activePopups = popupsRef.current.filter((p) => time - p.startTime < 1000);
     popupsRef.current = activePopups;
     for (const popup of activePopups) {
@@ -214,7 +260,6 @@ export default function NyaCrushGame() {
     return { row, col };
   };
 
-  // Tap-to-swap logic (select first, then tap adjacent to swap)
   const handleCellClick = (clientX: number, clientY: number) => {
     if (inputLockedRef.current) return;
     const engine = engineRef.current;
@@ -240,7 +285,6 @@ export default function NyaCrushGame() {
     }
   };
 
-  // Drag-to-swap (swipe from one candy to an adjacent one)
   const handlePointerDown = (e: React.PointerEvent) => {
     if (inputLockedRef.current) return;
     const engine = engineRef.current;
@@ -249,7 +293,6 @@ export default function NyaCrushGame() {
     if (!pos) return;
 
     dragRef.current = { start: pos, startX: e.clientX, startY: e.clientY, swapped: false };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -281,15 +324,49 @@ export default function NyaCrushGame() {
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
-    // If no drag swap happened, treat as tap (click-to-swap)
     if (!dragRef.current.swapped) {
       handleCellClick(e.clientX, e.clientY);
     }
     dragRef.current = null;
   };
 
-  const retryLevel = () => setRestartKey((k) => k + 1);
-  const nextLevel = () => setLevel((l) => l + 1);
+  const retryLevel = () => {
+    gameStartedRef.current = true;
+    localStorage.removeItem(SAVE_KEY);
+    setRestartKey((k) => k + 1);
+  };
+  const nextLevel = () => {
+    gameStartedRef.current = true;
+    setLevel((l) => l + 1);
+  };
+
+  const handleContinue = () => {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (!saved) {
+      setShowContinue(false);
+      return;
+    }
+    try {
+      const data: SavedState = JSON.parse(saved);
+      pendingRestoreRef.current = data;
+      gameStartedRef.current = true;
+      setShowContinue(false);
+      if (data.level !== level) {
+        setLevel(data.level);
+      } else {
+        setRestartKey((k) => k + 1);
+      }
+    } catch {
+      setShowContinue(false);
+    }
+  };
+
+  const handleNewGame = () => {
+    gameStartedRef.current = true;
+    localStorage.removeItem(SAVE_KEY);
+    setShowContinue(false);
+    setRestartKey((k) => k + 1);
+  };
 
   const config = configRef.current;
 
@@ -301,6 +378,12 @@ export default function NyaCrushGame() {
         {highScore > 0 && (
           <span className="text-xs text-muted-foreground">Best: {formatNumber(highScore)}</span>
         )}
+        <button
+          onClick={() => setShowHelp(s => !s)}
+          className="ml-auto text-xs text-primary font-bold hover:underline"
+        >
+          How to play?
+        </button>
       </div>
 
       <div className="relative w-full max-w-[400px] touch-none select-none">
@@ -317,6 +400,71 @@ export default function NyaCrushGame() {
           role="img"
         />
 
+        {showContinue && savedInfo && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm gap-4 rounded-2xl px-6">
+            <Sparkles className="w-8 h-8 text-primary" />
+            <h3 className="font-heading font-bold text-xl text-white text-center">Continue your game?</h3>
+            <div className="flex gap-4 text-center">
+              <div>
+                <p className="text-xs text-muted-foreground">Level</p>
+                <p className="text-lg font-bold text-white">{savedInfo.level}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Score</p>
+                <p className="text-lg font-bold text-white">{formatNumber(savedInfo.score)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Moves</p>
+                <p className="text-lg font-bold text-white">{savedInfo.moves}</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleContinue}
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm active:scale-95 transition-transform"
+              >
+                <Play className="w-4 h-4 fill-primary-foreground" /> Continue
+              </button>
+              <button
+                onClick={handleNewGame}
+                className="px-5 py-2.5 rounded-xl bg-white/10 text-white font-heading font-bold text-sm active:scale-95 transition-transform"
+              >
+                New Game
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showHelp && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm gap-3 rounded-2xl px-5 py-4 overflow-y-auto">
+            <h3 className="font-heading font-bold text-lg text-white">Special Candies</h3>
+            <div className="space-y-2.5 text-left w-full">
+              <div className="flex items-start gap-2">
+                <Zap className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />
+                <p className="text-xs text-white/80">Match <b className="text-white">4 in a row</b> &rarr; Striped candy. Clears its entire row + column when activated.</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <Bomb className="w-4 h-4 text-orange-400 mt-0.5 shrink-0" />
+                <p className="text-xs text-white/80">Match an <b className="text-white">L or T shape</b> (5 candies) &rarr; Bomb. Explodes a 3&times;3 area.</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <Rainbow className="w-4 h-4 text-pink-400 mt-0.5 shrink-0" />
+                <p className="text-xs text-white/80">Match <b className="text-white">5 in a row</b> &rarr; Rainbow. Clears all candies of one color.</p>
+              </div>
+              <div className="flex items-start gap-2 pt-1 border-t border-white/10">
+                <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <p className="text-xs text-white/80"><b className="text-white">Swap a special candy with any adjacent candy</b> to activate it directly &mdash; no match needed!</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowHelp(false)}
+              className="mt-2 px-5 py-2 rounded-xl bg-primary text-primary-foreground font-heading font-bold text-sm active:scale-95 transition-transform"
+            >
+              Got it!
+            </button>
+          </div>
+        )}
+
         {gameState === "levelcomplete" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm gap-3 rounded-2xl px-4">
             {isNewHighScore && (
@@ -324,7 +472,7 @@ export default function NyaCrushGame() {
             )}
             <div className="flex gap-1">
               {[1, 2, 3].map((s) => (
-                <span key={s} className={`text-3xl ${s <= stars ? "text-gold" : "text-white/20"}`}>★</span>
+                <span key={s} className={`text-3xl ${s <= stars ? "text-gold" : "text-white/20"}`}>&#9733;</span>
               ))}
             </div>
             <h3 className="font-heading font-bold text-2xl text-white">Level Complete!</h3>

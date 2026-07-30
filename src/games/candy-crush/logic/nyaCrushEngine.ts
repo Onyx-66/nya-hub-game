@@ -178,10 +178,51 @@ export class NyaCrushEngine {
     const matches = this.findMatches();
 
     if (matches.length === 0) {
-      this.swapRaw(pos1.row, pos1.col, pos2.row, pos2.col);
-      this.state = 'playing';
+      // No regular match — check if either swapped candy is special.
+      // If so, activate it directly (swap a special with any candy to use it).
+      const candyAtPos1 = this.board[pos1.row][pos1.col];
+      const candyAtPos2 = this.board[pos2.row][pos2.col];
+      const hasSpecial = candyAtPos1?.isSpecial || candyAtPos2?.isSpecial;
+
+      if (!hasSpecial) {
+        this.swapRaw(pos1.row, pos1.col, pos2.row, pos2.col);
+        this.state = 'playing';
+        this.onBoardUpdate?.();
+        return { valid: false, matches: [], cascaded: false };
+      }
+
+      // Rainbow: if swapped with a regular candy, target that candy's type
+      if (candyAtPos2?.isSpecial && candyAtPos2.specialType === 'rainbow' && !candyAtPos1?.isSpecial) {
+        candyAtPos2.type = candyAtPos1!.type;
+      }
+      if (candyAtPos1?.isSpecial && candyAtPos1.specialType === 'rainbow' && !candyAtPos2?.isSpecial) {
+        candyAtPos1.type = candyAtPos2!.type;
+      }
+
+      // Trigger the special(s) via single-position match groups
+      const specialGroups: Position[][] = [];
+      if (candyAtPos1?.isSpecial) specialGroups.push([{ row: pos1.row, col: pos1.col }]);
+      if (candyAtPos2?.isSpecial) specialGroups.push([{ row: pos2.row, col: pos2.col }]);
+
+      this.removeMatches(specialGroups);
+      this.applyGravity();
+      this.fillEmpty();
+      this.processBoard();
+
+      this.moves--;
+
+      if (this.score >= this.targetScore) {
+        this.state = 'levelcomplete';
+        this.onLevelComplete?.(this.score, this.getStars());
+      } else if (this.moves <= 0) {
+        this.state = 'gameover';
+        this.onGameOver?.(this.score);
+      } else {
+        this.state = 'playing';
+      }
+
       this.onBoardUpdate?.();
-      return { valid: false, matches: [], cascaded: false };
+      return { valid: true, matches: specialGroups, cascaded: false };
     }
 
     const cascades = this.processBoard();
@@ -385,7 +426,7 @@ export class NyaCrushEngine {
   processBoard(): number {
     let cascades = 0;
     let matches = this.findMatches();
-    while (matches.length > 0) {
+    while (matches.length > 0 && cascades < 50) {
       const cascadeLevel = cascades;
       let cascadeScore = 0;
       for (const group of matches) {
@@ -419,6 +460,25 @@ export class NyaCrushEngine {
     if (this.score >= this.targetScore * 1.5) return 2;
     if (this.score >= this.targetScore) return 1;
     return 0;
+  }
+
+  serialize(): { board: (Candy | null)[][]; score: number; moves: number; level: number } {
+    return {
+      board: this.board.map(row => row.map(c => c ? { ...c } : null)),
+      score: this.score,
+      moves: this.moves,
+      level: this.level,
+    };
+  }
+
+  restoreState(data: { board: (Candy | null)[][]; score: number; moves: number }): void {
+    this.board = data.board.map(row => row.map(c => c ? { ...c } : null));
+    this.score = data.score;
+    this.moves = data.moves;
+    this.state = 'playing';
+    this.selectedCell = null;
+    this.onScoreChange?.(this.score);
+    this.onBoardUpdate?.();
   }
 }
 
