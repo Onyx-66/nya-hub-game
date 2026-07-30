@@ -1,0 +1,48 @@
+{
+  "name": "GameArticle",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title",
+      "description": "The headline of the article"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "A short summary of the article content"
+    },
+    "author": {
+      "type": "string",
+      "title": "Author",
+      "description": "The author or team member who wrote the article"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category",
+      "description": "The topic category, e.g. guides, news, updates",
+      "enum": [
+        "guides",
+        "news",
+        "updates",
+        "tips"
+      ],
+      "default": "guides"
+    },
+    "published_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Published Date",
+      "description": "The date the article was published"
+    },
+    "content": {
+      "type": "string",
+      "title": "Content",
+      "description": "The full article body text"
+    }
+  },
+  "required": [
+    "title",
+    "description"
+  ]
+}

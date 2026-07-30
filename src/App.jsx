@@ -19,6 +19,9 @@ import AchievementsScreen from '@/features/achievements/AchievementsScreen';
 import ChallengesScreen from '@/features/challenges/ChallengesScreen';
 import AchievementNotification from '@/components/nya/AchievementNotification';
 import LoginModal from '@/features/landing/LoginModal';
+import About from '@/pages/About';
+import Contact from '@/pages/Contact';
+import MobileGamingGuide from '@/pages/MobileGamingGuide';
 import ErrorBoundary from '@/components/nya/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
@@ -65,6 +68,9 @@ const AuthenticatedApp = () => {
         <ErrorBoundary>
         <Routes location={location}>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/mobile-gaming-guide" element={<MobileGamingGuide />} />
           <Route path="/hub" element={<RequireAuth><HubScreen /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><ProfileScreen /></RequireAuth>} />
           <Route path="/store" element={<RequireAuth><StoreScreen /></RequireAuth>} />

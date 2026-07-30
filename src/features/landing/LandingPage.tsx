@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Play, ShoppingBag, User, Users, Settings, PawPrint, Volume2, VolumeX } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -179,8 +179,15 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Bottom: Version */}
-      <div className="relative z-10 text-center">
+      {/* Bottom: Footer links + version */}
+      <div className="relative z-10 text-center space-y-1">
+        <div className="flex items-center justify-center gap-4 text-xs">
+          <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About</Link>
+          <span className="text-border">·</span>
+          <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">Contact</Link>
+          <span className="text-border">·</span>
+          <Link to="/mobile-gaming-guide" className="text-muted-foreground hover:text-primary transition-colors">Gaming Guide</Link>
+        </div>
         <p className="text-xs text-muted-foreground">v1.0.0</p>
       </div>
 
