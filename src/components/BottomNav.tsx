@@ -1,9 +1,9 @@
-import { Home, ShoppingBag, Trophy, User, Users } from "lucide-react";
+import { Home, ShoppingBag, Trophy, User, Target } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const items = [
   { to: "/hub", label: "Games", icon: Home },
-  { to: "/friends", label: "Friends", icon: Users },
+  { to: "/challenges", label: "Challenges", icon: Target },
   { to: "/rankings", label: "Ranks", icon: Trophy },
   { to: "/store", label: "Store", icon: ShoppingBag },
   { to: "/profile", label: "Profile", icon: User },

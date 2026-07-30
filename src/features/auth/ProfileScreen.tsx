@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Pencil } from "lucide-react";
+import { LogOut, Pencil, Users, Trophy, Settings } from "lucide-react";
 import NyaLayout from "@/components/nya/NyaLayout";
 import NyaButton from "@/components/nya/NyaButton";
 import { useAuthStore } from "@/store/authStore";
@@ -68,6 +68,31 @@ export default function ProfileScreen() {
 
         {/* Achievements */}
         <ProfileAchievements />
+
+        {/* Quick links */}
+        <div className="grid grid-cols-3 gap-3">
+          <button
+            onClick={() => navigate("/friends")}
+            className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-muted/50 hover:bg-muted transition-colors"
+          >
+            <Users className="w-5 h-5 text-primary" />
+            <span className="text-xs font-heading font-medium text-foreground">Friends</span>
+          </button>
+          <button
+            onClick={() => navigate("/achievements")}
+            className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-muted/50 hover:bg-muted transition-colors"
+          >
+            <Trophy className="w-5 h-5 text-gold" />
+            <span className="text-xs font-heading font-medium text-foreground">Achievements</span>
+          </button>
+          <button
+            onClick={() => navigate("/settings")}
+            className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-muted/50 hover:bg-muted transition-colors"
+          >
+            <Settings className="w-5 h-5 text-muted-foreground" />
+            <span className="text-xs font-heading font-medium text-foreground">Settings</span>
+          </button>
+        </div>
 
         {/* Actions */}
         <div className="space-y-3 pt-2">

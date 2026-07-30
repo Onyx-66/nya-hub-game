@@ -13,7 +13,7 @@ import { BLOCK_BLAST_META } from "@/games/block-blast/game.config";
 import { NYA_CRUSH_META } from "@/games/candy-crush/game.config";
 import { COLORING_META } from "@/games/coloring/game.config";
 import DailyBonus from "@/components/nya/DailyBonus";
-import DailyChallengesSection from "@/components/nya/DailyChallengesSection";
+import HubChallengeBanner from "@/components/nya/HubChallengeBanner";
 import OnboardingTutorial from "@/components/nya/OnboardingTutorial";
 import { useChallengeStore } from "@/store/challengeStore";
 import type { GameMeta } from "@/types";
@@ -130,8 +130,8 @@ export default function HubScreen() {
           />
         )}
 
-        {/* daily challenges */}
-        <DailyChallengesSection />
+        {/* daily challenges banner */}
+        <HubChallengeBanner />
 
         {/* game grid */}
         <div>
