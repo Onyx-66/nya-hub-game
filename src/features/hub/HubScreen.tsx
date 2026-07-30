@@ -7,6 +7,7 @@ import FeaturedBanner from "@/components/nya/FeaturedBanner";
 import { audioService } from "@/services/audioService";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/useGameStore";
+import { useAchievementStore } from "@/store/achievementStore";
 import { SNAKE_GAME_META } from "@/games/snake/game.config";
 import { BLOCK_BLAST_META } from "@/games/block-blast/game.config";
 import { NYA_CRUSH_META } from "@/games/candy-crush/game.config";
@@ -94,9 +95,11 @@ export default function HubScreen() {
 
   const featuredGames = games.filter((g) => g.isFeatured && !g.isComingSoon);
 
-  // Play hub music on mount
+  // Play hub music on mount + sync achievements
   useEffect(() => {
     audioService.playMusic("hub-chill", true);
+    useAchievementStore.getState().syncFromStores();
+    useAchievementStore.getState().addProgress("hubVisited", 1);
   }, []);
 
   return (

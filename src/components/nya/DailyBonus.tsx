@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PawPrint, Gift, Play, X } from "lucide-react";
 import { adService } from "@/services/adService";
 import { useEconomyStore } from "@/store/economyStore";
+import { useAchievementStore } from "@/store/achievementStore";
 import {
   DAILY_BASE_REWARD,
   DAILY_AD_REWARD,
@@ -33,6 +34,9 @@ export default function DailyBonus() {
   const handleClaim = (amount: number) => {
     addPaws(amount, `Daily bonus: ${amount} paws`);
     markDailyClaimed();
+    const ach = useAchievementStore.getState();
+    ach.addProgress("pawsEarned", amount);
+    ach.addProgress("dailyBonuses", 1);
     setVisible(false);
   };
 

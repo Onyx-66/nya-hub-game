@@ -3,6 +3,7 @@ import { useEconomyStore } from "@/store/economyStore";
 import { useGameStore } from "@/store/useGameStore";
 import { useAuthStore } from "@/store/authStore";
 import { audioService } from "@/services/audioService";
+import { useAchievementStore } from "@/store/achievementStore";
 import {
   PAWS_PER_GAME_MAX,
   PAWS_PER_SCORE_DIVISOR,
@@ -55,6 +56,28 @@ export function useGameEconomy(gameSlug: string) {
 
       // End session in game store (records high score + gamesPlayed).
       endSession(gameSlug, score, level, stars);
+
+      // Track achievement progress
+      const ach = useAchievementStore.getState();
+      ach.addProgress("gamesPlayed", 1);
+      ach.addProgress("totalScore", score);
+      ach.addProgress("totalStars", stars);
+      ach.setProgress(`highScore:${gameSlug}`, score);
+      ach.addProgress(`plays:${gameSlug}`, 1);
+      ach.setProgress(`stars:${gameSlug}`, stars);
+      ach.setProgress("anyHighScore", score);
+      // Star milestones (first time achieving each tier)
+      if (stars >= 1) ach.setProgress("first1Star", 1);
+      if (stars >= 2) ach.setProgress("first2Star", 1);
+      if (stars >= 3) {
+        ach.setProgress("first3Star", 1);
+        ach.addProgress("count3Star", 1);
+      }
+      // Unique games played
+      const uniqueCount = Object.keys(ach.progress)
+        .filter((k) => k.startsWith("plays:") && ach.progress[k] > 0)
+        .length;
+      ach.setProgress("uniqueGames", uniqueCount);
 
       // Sync gamesPlayed + high score into the auth profile (cross-store).
       const currentUser = useAuthStore.getState().user;

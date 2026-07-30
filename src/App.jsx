@@ -15,6 +15,8 @@ import RankingsScreen from '@/features/rankings/components/RankingScreen';
 import GameWrapper from '@/games/GameWrapper';
 import SettingsScreen from '@/features/settings/components/SettingsScreen';
 import FriendsScreen from '@/features/friends/FriendsScreen';
+import AchievementsScreen from '@/features/achievements/AchievementsScreen';
+import AchievementNotification from '@/components/nya/AchievementNotification';
 import LoginModal from '@/features/landing/LoginModal';
 import { useAuthStore } from '@/store/authStore';
 // Add page imports here
@@ -59,19 +61,23 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <div key={location.pathname} className="animate-page-enter">
-      <Routes location={location}>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/hub" element={<RequireAuth><HubScreen /></RequireAuth>} />
-        <Route path="/profile" element={<RequireAuth><ProfileScreen /></RequireAuth>} />
-        <Route path="/store" element={<RequireAuth><StoreScreen /></RequireAuth>} />
-        <Route path="/rankings" element={<RequireAuth><RankingsScreen /></RequireAuth>} />
-        <Route path="/friends" element={<RequireAuth><FriendsScreen /></RequireAuth>} />
-        <Route path="/settings" element={<RequireAuth><SettingsScreen /></RequireAuth>} />
-        <Route path="/game/:slug" element={<RequireAuth><GameWrapper /></RequireAuth>} />
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    </div>
+    <>
+      <div key={location.pathname} className="animate-page-enter">
+        <Routes location={location}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/hub" element={<RequireAuth><HubScreen /></RequireAuth>} />
+          <Route path="/profile" element={<RequireAuth><ProfileScreen /></RequireAuth>} />
+          <Route path="/store" element={<RequireAuth><StoreScreen /></RequireAuth>} />
+          <Route path="/rankings" element={<RequireAuth><RankingsScreen /></RequireAuth>} />
+          <Route path="/friends" element={<RequireAuth><FriendsScreen /></RequireAuth>} />
+          <Route path="/achievements" element={<RequireAuth><AchievementsScreen /></RequireAuth>} />
+          <Route path="/settings" element={<RequireAuth><SettingsScreen /></RequireAuth>} />
+          <Route path="/game/:slug" element={<RequireAuth><GameWrapper /></RequireAuth>} />
+          <Route path="*" element={<PageNotFound />} />
+        </Routes>
+      </div>
+      <AchievementNotification />
+    </>
   );
 };
 

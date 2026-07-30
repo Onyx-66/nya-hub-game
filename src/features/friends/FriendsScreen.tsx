@@ -8,6 +8,7 @@ import CatAvatar from "@/components/nya/CatAvatar";
 import { useFriendsStore, type Friend } from "@/store/friendsStore";
 import { useEconomyStore } from "@/store/economyStore";
 import { useAuthStore } from "@/store/authStore";
+import { useAchievementStore } from "@/store/achievementStore";
 import FriendCard from "./FriendCard";
 import FriendSearchTab from "./FriendSearchTab";
 
@@ -38,6 +39,10 @@ export default function FriendsScreen() {
   const handleConfirmGift = () => {
     if (!giftFriend) return;
     if (spendGems(GIFT_COST_GEMS)) {
+      const ach = useAchievementStore.getState();
+      ach.addProgress("giftsSent", 1);
+      ach.addProgress("totalSpent", GIFT_COST_GEMS);
+      ach.setProgress("friendsViewed", 1);
       setGiftFriend(null);
     } else {
       setGiftError("Not enough gems! Visit the store to get more.");
@@ -50,6 +55,8 @@ export default function FriendsScreen() {
 
   const handleAccept = (id: string) => {
     acceptRequest(id);
+    const ach = useAchievementStore.getState();
+    ach.setProgress("friendsCount", friends.length + 1);
     // Social butterfly achievement
     if (friends.length + 1 >= 1) {
       addTitle("social_butterfly");
