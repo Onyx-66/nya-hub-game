@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Play, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Sparkles, PawPrint } from "lucide-react";
 import type { GameMeta } from "@/types";
+import { GAME_SLUG_ICONS } from "@/components/nya/GameCard";
 
 interface FeaturedBannerProps {
   games: GameMeta[];
@@ -55,9 +56,12 @@ export default function FeaturedBanner({
             initial={{ scale: 0.5, rotate: -10 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 18 }}
-            className="relative shrink-0 w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-5xl"
+            className="relative shrink-0 w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-sm flex items-center justify-center"
           >
-            {game.icon}
+            {(() => {
+              const Icon = GAME_SLUG_ICONS[game.slug] ?? PawPrint;
+              return <Icon className="w-10 h-10 text-white" />;
+            })()}
           </motion.div>
 
           {/* text + CTA */}

@@ -77,7 +77,10 @@ export const useAuthStore = create<AuthState>()(
       login: (pseudonym, country = "") => {
         const existing = get().user;
         if (existing) return;
-        const name = pseudonym.trim();
+        const name = pseudonym.trim().slice(0, 20);
+        if (!name || !/^[\p{L}\p{N} _-]+$/u.test(name)) {
+          throw new Error("Pseudonym must be 1-20 characters (letters, numbers, spaces, _ or -)");
+        }
         if (!isPseudonymAvailable(name)) {
           throw new Error("Pseudonym already taken");
         }

@@ -18,7 +18,7 @@ interface GameCardProps {
 
 type IconComp = ComponentType<{ className?: string; style?: CSSProperties }>;
 
-const GAME_SLUG_ICONS: Record<string, IconComp> = {
+export const GAME_SLUG_ICONS: Record<string, IconComp> = {
   snake: Droplet,
   "water-sort": PaintBucket,
   meowdoku: LayoutGrid,
@@ -107,7 +107,7 @@ export default function GameCard({ game, index = 0, highScore, badge, onPlay }: 
       className="relative"
     >
       <div
-        className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} p-4 aspect-[4/5] flex flex-col justify-between shadow-lg ${
+        className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} p-4 min-h-[264px] flex flex-col justify-between shadow-lg ${
           locked ? "opacity-60" : ""
         }`}
       >
@@ -151,14 +151,14 @@ export default function GameCard({ game, index = 0, highScore, badge, onPlay }: 
 
         {/* name + description + play */}
         <div className="relative">
-          <h3 className="font-heading font-bold text-white text-lg leading-tight">
+          <h3 className="font-heading font-bold text-white text-lg leading-tight truncate">
             {game.name.en}
           </h3>
           <p className="text-[11px] text-white/70 line-clamp-1 mt-0.5">
             {game.description?.en}
           </p>
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2 mt-2">
+            <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
               {/* difficulty dots */}
               <DifficultyDots difficulty={game.difficulty} variant="light" />
               <span className="text-[11px] text-white/80 capitalize">
@@ -174,14 +174,14 @@ export default function GameCard({ game, index = 0, highScore, badge, onPlay }: 
                       }`}
                     />
                   ))}
-                  <span className="text-[10px] text-white/70 ml-1">{highScore}</span>
+                  <span className="text-[10px] text-white/70 ml-1 whitespace-nowrap">{highScore}</span>
                 </div>
               )}
             </div>
             <button
               onClick={() => !locked && onPlay?.(game)}
               disabled={locked}
-              className={`flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${
+              className={`flex items-center gap-1.5 shrink-0 text-xs font-bold px-4 py-2.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${
                 locked
                   ? "bg-black/30 text-white/50 cursor-not-allowed"
                   : "bg-white text-gray-900 active:scale-95"

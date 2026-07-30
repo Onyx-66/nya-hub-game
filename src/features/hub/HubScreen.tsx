@@ -154,7 +154,7 @@ export default function HubScreen() {
           transition={{ duration: 0.4 }}
         >
           <p className="text-muted-foreground text-sm">Welcome back,</p>
-          <h2 className="font-heading font-bold text-xl text-foreground">
+          <h2 className="font-heading font-bold text-xl text-foreground truncate">
             {user?.pseudonym ?? "Nya Player"}!
           </h2>
         </motion.div>
