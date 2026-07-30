@@ -30,7 +30,7 @@ const DEFAULT_NOTIFICATIONS: NotificationSettings = {
 export const usePreferencesStore = create<PreferencesState>()(
   persist(
     (set) => ({
-      gameViewMode: "grid",
+      gameViewMode: "compact",
       notifications: { ...DEFAULT_NOTIFICATIONS },
 
       setGameViewMode: (mode) => set({ gameViewMode: mode }),
@@ -46,7 +46,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         })),
 
       reset: () =>
-        set({ gameViewMode: "grid", notifications: { ...DEFAULT_NOTIFICATIONS } }),
+        set({ gameViewMode: "compact", notifications: { ...DEFAULT_NOTIFICATIONS } }),
     }),
     { name: "nya-hub-preferences" }
   )

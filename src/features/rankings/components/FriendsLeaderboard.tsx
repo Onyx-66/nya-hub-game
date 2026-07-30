@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Users, ArrowUp, ArrowDown, Minus, UserPlus } from "lucide-react";
+import { Users, ArrowUp, ArrowDown, Minus, UserPlus, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFriendsStore, type Friend } from "@/store/friendsStore";
 import { useAuthStore } from "@/store/authStore";
@@ -8,61 +8,87 @@ import CatAvatar from "@/components/nya/CatAvatar";
 import { getAvatar } from "@/services/leaderboardData";
 
 interface FriendsLeaderboardProps {
-  /** The game currently selected in the ranking screen */
   gameSlug: string;
 }
 
 interface RankedFriend extends Friend {
   rank: number;
   movement: "up" | "down" | "same";
+  changeAmount: number;
 }
 
-/**
- * Builds a ranked list of friends + the current user for a given game.
- * Uses deterministic mock scores per (friend, game) combination so the
- * ranking is stable but varies across games.
- */
-function scoreForFriend(friend: Friend, gameSlug: string): number {
-  // Deterministic pseudo-score from the friend's base score + game seed
+const REFRESH_INTERVAL = 60;
+
+function scoreForFriend(friend: Friend, gameSlug: string, tick: number): number {
   const seed = gameSlug.split("").reduce((s, c) => s + c.charCodeAt(0), 0);
   const offset = (friend.avatarId * 137 + seed * 31) % 5000;
-  return Math.max(0, friend.score + offset - 2500);
+  const perturbation = ((friend.avatarId + tick * 37) % 3000) - 1500;
+  return Math.max(0, friend.score + offset - 2500 + perturbation);
 }
 
-function scoreForUser(gameSlug: string): number {
-  // Use the user's actual high score if available, else a mid-range value
+function scoreForUser(gameSlug: string, tick: number): number {
   const gameStore = JSON.parse(localStorage.getItem("nya-hub-games") || '{"state":{}}');
   const hs = gameStore?.state?.highScores?.[gameSlug] ?? 0;
-  return hs > 0 ? hs : 8200;
+  return Math.max(0, (hs > 0 ? hs : 8200) + (tick % 5) * 200);
 }
 
 export default function FriendsLeaderboard({ gameSlug }: FriendsLeaderboardProps) {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { friends } = useFriendsStore();
+  const [tick, setTick] = useState(0);
+  const [nextRefreshIn, setNextRefreshIn] = useState(REFRESH_INTERVAL);
+  const prevRanksRef = useRef<Map<string, number>>(new Map());
+
+  // Reset on game change
+  useEffect(() => {
+    prevRanksRef.current = new Map();
+    setTick(0);
+    setNextRefreshIn(REFRESH_INTERVAL);
+  }, [gameSlug]);
+
+  // 60s auto-refresh
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((t) => t + 1);
+      setNextRefreshIn(REFRESH_INTERVAL);
+    }, REFRESH_INTERVAL * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNextRefreshIn((prev) => (prev > 1 ? prev - 1 : REFRESH_INTERVAL));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const ranked = useMemo<RankedFriend[]>(() => {
     if (!user) return [];
 
-    const userScore = scoreForUser(gameSlug);
+    const userScore = scoreForUser(gameSlug, tick);
     const userEntry = {
       id: user.id,
       pseudonym: user.pseudonym,
       avatarId: parseInt(user.avatar) || 1,
-      country: { code: user.country, flag: "🌍", name: "You" },
+      country: { code: user.country ?? "TN", flag: "🌍", name: "You" },
       score: userScore,
       isYou: true,
       addedDate: user.joinedDate,
       isOnline: true,
       rank: 0,
       movement: "same" as const,
+      changeAmount: 0,
     };
 
     const friendEntries = friends.map((f) => ({
       ...f,
       isYou: false,
+      score: scoreForFriend(f, gameSlug, tick),
       rank: 0,
-      movement: ((f.avatarId % 3) - 1) as "up" | "down" | "same",
+      movement: "same" as const,
+      changeAmount: 0,
     }));
 
     const all = [userEntry, ...friendEntries];
@@ -77,8 +103,26 @@ export default function FriendsLeaderboard({ gameSlug }: FriendsLeaderboardProps
       }
     }
 
+    // Compute movement from previous snapshot
+    const newRanks = new Map<string, number>();
+    for (const entry of all) {
+      const prevRank = prevRanksRef.current.get(entry.id);
+      if (prevRank !== undefined) {
+        const delta = prevRank - entry.rank;
+        if (delta > 0) {
+          entry.movement = "up";
+          entry.changeAmount = delta;
+        } else if (delta < 0) {
+          entry.movement = "down";
+          entry.changeAmount = Math.abs(delta);
+        }
+      }
+      newRanks.set(entry.id, entry.rank);
+    }
+    prevRanksRef.current = newRanks;
+
     return all as RankedFriend[];
-  }, [friends, user, gameSlug]);
+  }, [friends, user, gameSlug, tick]);
 
   if (!user) return null;
 
@@ -113,9 +157,7 @@ export default function FriendsLeaderboard({ gameSlug }: FriendsLeaderboardProps
     <div className="space-y-2">
       {ranked.map((entry, i) => {
         const isYou = entry.isYou;
-        const avatarEmoji = isYou
-          ? null
-          : getAvatar(entry.avatarId);
+        const avatarEmoji = isYou ? null : getAvatar(entry.avatarId);
 
         return (
           <motion.div
@@ -130,7 +172,7 @@ export default function FriendsLeaderboard({ gameSlug }: FriendsLeaderboardProps
             }`}
           >
             {/* Rank number */}
-            <div className={`w-8 text-center shrink-0 ${entry.rank <= 3 ? "" : ""}`}>
+            <div className="w-8 text-center shrink-0">
               <span
                 className={`font-heading font-bold text-lg ${
                   entry.rank === 1
@@ -175,13 +217,19 @@ export default function FriendsLeaderboard({ gameSlug }: FriendsLeaderboardProps
               )}
             </div>
 
-            {/* Movement indicator */}
+            {/* Movement indicator with amount */}
             {!isYou && (
               <div className="shrink-0">
                 {entry.movement === "up" ? (
-                  <ArrowUp className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full">
+                    <ArrowUp className="w-2.5 h-2.5" />
+                    {entry.changeAmount}
+                  </span>
                 ) : entry.movement === "down" ? (
-                  <ArrowDown className="w-3.5 h-3.5 text-red-400" />
+                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-red-400 bg-red-500/15 px-1.5 py-0.5 rounded-full">
+                    <ArrowDown className="w-2.5 h-2.5" />
+                    {entry.changeAmount}
+                  </span>
                 ) : (
                   <Minus className="w-3.5 h-3.5 text-muted-foreground/50" />
                 )}
@@ -197,6 +245,12 @@ export default function FriendsLeaderboard({ gameSlug }: FriendsLeaderboardProps
           </motion.div>
         );
       })}
+
+      {/* Auto-refresh indicator */}
+      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground py-2">
+        <RefreshCw className="w-3 h-3" />
+        Live · updates in {nextRefreshIn}s
+      </div>
     </div>
   );
 }

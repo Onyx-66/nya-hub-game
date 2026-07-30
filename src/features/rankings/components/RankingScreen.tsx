@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Globe, Flag, Users, Check, Sparkles } from "lucide-react";
+import { ChevronDown, Globe, Flag, Users, Check, Sparkles, RefreshCw } from "lucide-react";
 import NyaLayout from "@/components/nya/NyaLayout";
 import { useAuthStore } from "@/store/authStore";
 import { useLeaderboard, type LeaderboardScope } from "../hooks/useLeaderboard";
@@ -123,7 +123,7 @@ export default function RankingScreen() {
     if (!user) login();
   }, [user, login]);
 
-  const { entries, currentUserRank, isLoading, isRefreshing, refresh } =
+  const { entries, currentUserRank, isLoading, isRefreshing, refresh, rankChanges, nextRefreshIn } =
     useLeaderboard(selectedGame.slug, scope);
 
   const podium = useMemo(
@@ -196,15 +196,19 @@ export default function RankingScreen() {
               currentUserRank={currentUserRank}
               isLoading={isLoading}
               isRefreshing={isRefreshing}
+              rankChanges={rankChanges}
             />
 
-            {/* ── Refresh ── */}
+            {/* ── Auto-refresh status ── */}
             <button
               onClick={refresh}
               disabled={isRefreshing}
-              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
+              className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
             >
-              {isRefreshing ? "Refreshing..." : "Tap to refresh"}
+              <RefreshCw className={`w-3 h-3 ${isRefreshing ? "animate-spin" : ""}`} />
+              {isRefreshing
+                ? "Refreshing..."
+                : `Live · updates in ${nextRefreshIn}s`}
             </button>
           </>
         )}

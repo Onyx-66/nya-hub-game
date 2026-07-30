@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import NyaLayout from "@/components/nya/NyaLayout";
 import NyaButton from "@/components/nya/NyaButton";
+import ThemePicker from "@/components/nya/ThemePicker";
 import Modal from "@/components/nya/Modal";
 import Toggle from "@/components/ui/Toggle";
 import { audioService } from "@/services/audioService";
@@ -296,6 +297,11 @@ export default function SettingsScreen() {
               />
             }
           />
+        </Section>
+
+        {/* ── APPEARANCE ── */}
+        <Section title="Appearance">
+          <ThemePicker />
         </Section>
 
         {/* ── ACCOUNT ── */}

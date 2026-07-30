@@ -9,6 +9,8 @@ import {
 
 export type LeaderboardScope = "global" | "national" | "friends";
 
+const REFRESH_INTERVAL = 60; // seconds
+
 interface CacheEntry {
   data: RankedResult;
   ts: number;
@@ -18,14 +20,13 @@ const CACHE_TTL = 30_000; // 30 seconds
 
 /**
  * Builds the ranked leaderboard for a game + scope.
- * - national: filtered by the current user's country
- * - friends: returns empty (coming soon)
- * Ranks use competition ranking (ties share a rank).
+ * Scores are perturbed by `tick` to simulate live rank changes.
  */
 function buildRanked(
   gameSlug: string,
   scope: LeaderboardScope,
   user: ReturnType<typeof useAuthStore.getState>["user"],
+  tick: number,
 ): RankedResult {
   if (scope === "friends") {
     return { entries: [], currentUserRank: null };
@@ -35,25 +36,31 @@ function buildRanked(
   const userCountry =
     getCountry(userCountryCode) ?? getCountry("TN")!;
 
-  // Clone base data + inject the current user with a mid-tier score.
   const base = generateLeaderboard(gameSlug).map((e) => ({ ...e }));
+
+  // Perturb scores based on tick so ranks shift between refreshes
+  const perturbed = base.map((e, i) => {
+    const seed = e.id.charCodeAt(0) + tick * 37 + i * 13;
+    const offset = (seed % 4000) - 2000;
+    return { ...e, score: Math.max(100, e.score + offset) };
+  });
+
   const userEntry: RankEntry = {
     id: user?.id ?? "current_user",
     pseudonym: user?.pseudonym ?? "You",
     avatarId: 7,
     country: userCountry,
-    score: 8200,
+    score: 8200 + (tick % 5) * 250,
     isYou: true,
   };
 
-  let pool = [...base, userEntry];
+  let pool = [...perturbed, userEntry];
   if (scope === "national") {
     pool = pool.filter((e) => e.country.code === userCountry.code);
   }
 
   pool.sort((a, b) => b.score - a.score);
 
-  // Assign competition ranks (ties share rank, next ranks skipped).
   let currentUserRank: number | null = null;
   const entries: RankEntry[] = pool.map((entry) => ({ ...entry }));
   for (let i = 0; i < entries.length; i++) {
@@ -65,9 +72,7 @@ function buildRanked(
     if (entries[i].isYou) currentUserRank = entries[i].rank ?? null;
   }
 
-  // gameSlug is used to vary data per game (deterministic offset).
   void gameSlug;
-
   return { entries, currentUserRank };
 }
 
@@ -77,6 +82,8 @@ interface UseLeaderboardReturn {
   isLoading: boolean;
   isRefreshing: boolean;
   refresh: () => void;
+  rankChanges: Record<string, number>;
+  nextRefreshIn: number;
 }
 
 export function useLeaderboard(
@@ -88,10 +95,13 @@ export function useLeaderboard(
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const cacheRef = useRef<Record<string, CacheEntry>>({});
+  const [rankChanges, setRankChanges] = useState<Record<string, number>>({});
+  const [nextRefreshIn, setNextRefreshIn] = useState(REFRESH_INTERVAL);
+  const prevRanksRef = useRef<Map<string, number>>(new Map());
+  const tickRef = useRef(0);
 
-  const fetch = useCallback(
-    (force: boolean) => {
+  const buildAndSet = useCallback(
+    (currentTick: number) => {
       if (scope === "friends") {
         setEntries([]);
         setCurrentUserRank(null);
@@ -100,45 +110,79 @@ export function useLeaderboard(
         return;
       }
 
-      const key = `${gameSlug}:${scope}`;
-      const cached = cacheRef.current[key];
-      const now = Date.now();
+      const data = buildRanked(gameSlug, scope, user, currentTick);
 
-      if (!force && cached && now - cached.ts < CACHE_TTL) {
-        setEntries(cached.data.entries);
-        setCurrentUserRank(cached.data.currentUserRank);
-        setIsLoading(false);
-        setIsRefreshing(false);
-        return;
+      // Compute rank changes from previous snapshot
+      const changes: Record<string, number> = {};
+      const newRanks = new Map<string, number>();
+      for (const entry of data.entries) {
+        if (entry.rank !== undefined) {
+          const prevRank = prevRanksRef.current.get(entry.id);
+          if (prevRank !== undefined) {
+            const delta = prevRank - entry.rank;
+            if (delta !== 0) changes[entry.id] = delta;
+          }
+          newRanks.set(entry.id, entry.rank);
+        }
       }
+      prevRanksRef.current = newRanks;
 
-      const isFirstFetch = !cached;
-      const delay = isFirstFetch ? 300 : 150;
-      if (force) setIsRefreshing(true);
-      else setIsLoading(true);
-
-      const timer = setTimeout(() => {
-        const data = buildRanked(gameSlug, scope, user);
-        cacheRef.current[key] = { data, ts: Date.now() };
-        setEntries(data.entries);
-        setCurrentUserRank(data.currentUserRank);
-        setIsLoading(false);
-        setIsRefreshing(false);
-      }, delay);
-
-      return () => clearTimeout(timer);
+      setEntries(data.entries);
+      setCurrentUserRank(data.currentUserRank);
+      setRankChanges(changes);
+      setIsLoading(false);
+      setIsRefreshing(false);
     },
     [gameSlug, scope, user],
   );
 
+  // Initial fetch + reset on game/scope change
   useEffect(() => {
-    const cleanup = fetch(false);
-    return cleanup;
-  }, [fetch]);
+    prevRanksRef.current = new Map();
+    setRankChanges({});
+    tickRef.current = 0;
+    setNextRefreshIn(REFRESH_INTERVAL);
+    setIsLoading(true);
+
+    const timer = setTimeout(() => {
+      buildAndSet(0);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [buildAndSet]);
 
   const refresh = useCallback(() => {
-    fetch(true);
-  }, [fetch]);
+    if (scope === "friends") return;
+    setIsRefreshing(true);
+    tickRef.current += 1;
+    setNextRefreshIn(REFRESH_INTERVAL);
+    setTimeout(() => {
+      buildAndSet(tickRef.current);
+    }, 150);
+  }, [buildAndSet, scope]);
 
-  return { entries, currentUserRank, isLoading, isRefreshing, refresh };
+  // 60s auto-refresh
+  useEffect(() => {
+    if (scope === "friends") return;
+    const interval = setInterval(refresh, REFRESH_INTERVAL * 1000);
+    return () => clearInterval(interval);
+  }, [refresh, scope]);
+
+  // Countdown timer (1s tick)
+  useEffect(() => {
+    if (scope === "friends") return;
+    const timer = setInterval(() => {
+      setNextRefreshIn((prev) => (prev > 1 ? prev - 1 : REFRESH_INTERVAL));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [scope]);
+
+  return {
+    entries,
+    currentUserRank,
+    isLoading,
+    isRefreshing,
+    refresh,
+    rankChanges,
+    nextRefreshIn,
+  };
 }

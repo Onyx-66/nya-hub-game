@@ -13,7 +13,6 @@ interface ProfileBannerProps {
 
 /** XP needed to reach the next level from current XP. */
 function xpForLevel(level: number): number {
-  // levelFromXP uses sqrt(xp/100)+1, so xp = (level-1)^2 * 100
   return Math.pow(level - 1, 2) * 100;
 }
 
@@ -27,7 +26,7 @@ export default function ProfileBanner({ onEditAvatar, onEditBio }: ProfileBanner
   const nextLevelXp = xpForLevel(user.level + 1);
   const xpProgress = Math.min(
     100,
-    ((user.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100
+    ((user.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100,
   );
 
   const joinedDate = new Date(user.joinedDate ?? new Date().toISOString()).toLocaleDateString("en-US", {
@@ -42,37 +41,48 @@ export default function ProfileBanner({ onEditAvatar, onEditBio }: ProfileBanner
       transition={{ duration: 0.4 }}
       className="rounded-3xl overflow-hidden border border-border/50 shadow-xl"
     >
-      {/* Banner — custom image or gradient */}
-      <div className="h-28 relative overflow-hidden">
+      {/* ── Banner — 16:9 aspect ratio ── */}
+      <div className="relative overflow-hidden aspect-[16/9]">
         {user.customBannerUrl ? (
-          <img src={user.customBannerUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <img
+            src={user.customBannerUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         ) : (
-          <div className={`absolute inset-0 bg-gradient-to-r ${banner.gradient}`} />
+          <div className={`absolute inset-0 bg-gradient-to-br ${banner.gradient}`} />
         )}
-        <div className="absolute inset-0 bg-black/10" />
+        {/* Gradient overlay for depth and text legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
         <BannerUploadButton />
-        <div className="absolute -bottom-1 right-4 flex items-center gap-1 text-[10px] font-bold bg-black/30 backdrop-blur-sm text-white px-2.5 py-1 rounded-full">
+        {/* Date badge */}
+        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[10px] font-bold bg-black/40 backdrop-blur-md text-white px-2.5 py-1 rounded-full">
           <Calendar className="w-2.5 h-2.5" /> {joinedDate}
         </div>
       </div>
 
-      {/* Avatar + info */}
-      <div className="bg-card px-5 pb-5 -mt-12 relative">
+      {/* ── Avatar + info ── */}
+      <div className="bg-card px-5 pb-5 -mt-10 relative">
         <div className="flex items-end justify-between">
-          <div className="relative group rounded-full ring-4 ring-card">
-            {user.customAvatarUrl ? (
-              <img
-                src={user.customAvatarUrl}
-                alt={user.pseudonym}
-                className="w-[88px] h-[88px] rounded-full object-cover ring-2 ring-primary/40"
-              />
-            ) : (
-              <CatAvatar avatarId={parseInt(user.avatar) || 1} size={88} className="ring-2 ring-primary/40" />
-            )}
+          <div className="relative">
+            {/* Avatar with double ring for professional look */}
+            <div className="rounded-full ring-4 ring-card p-0.5 shadow-lg">
+              {user.customAvatarUrl ? (
+                <img
+                  src={user.customAvatarUrl}
+                  alt={user.pseudonym}
+                  className="w-[80px] h-[80px] rounded-full object-cover ring-2 ring-primary/50"
+                />
+              ) : (
+                <div className="rounded-full ring-2 ring-primary/50">
+                  <CatAvatar avatarId={parseInt(user.avatar) || 1} size={80} />
+                </div>
+              )}
+            </div>
             {/* Edit avatar (picks from preset cats) */}
             <button
               onClick={onEditAvatar}
-              className="absolute bottom-0 left-0 w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-lg group-active:scale-90 transition-transform"
+              className="absolute bottom-0 left-0 w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-lg ring-2 ring-card group-active:scale-90 transition-transform"
               aria-label="Choose avatar"
             >
               <Pencil className="w-3.5 h-3.5 text-primary-foreground" />
@@ -84,13 +94,14 @@ export default function ProfileBanner({ onEditAvatar, onEditBio }: ProfileBanner
           </div>
         </div>
 
+        {/* Name + title */}
         <div className="mt-3">
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="font-heading font-bold text-xl text-foreground">
               {user.pseudonym}
             </h2>
             {title && (
-              <span className="text-[10px] font-bold bg-primary/15 text-primary px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold bg-primary/15 text-primary px-2.5 py-0.5 rounded-full border border-primary/20">
                 {title.name}
               </span>
             )}

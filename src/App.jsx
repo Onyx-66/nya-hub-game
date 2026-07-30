@@ -21,6 +21,7 @@ import AchievementNotification from '@/components/nya/AchievementNotification';
 import LoginModal from '@/features/landing/LoginModal';
 import ErrorBoundary from '@/components/nya/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
+import { useThemeStore } from '@/store/themeStore';
 // Add page imports here
 
 function RequireAuth({ children }) {
@@ -84,6 +85,17 @@ const AuthenticatedApp = () => {
 
 
 function App() {
+  const applyTheme = useThemeStore((s) => s.applyTheme);
+
+  useEffect(() => {
+    applyTheme();
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => {
+      if (useThemeStore.getState().theme === 'system') applyTheme();
+    };
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, [applyTheme]);
 
   return (
     <AuthProvider>
