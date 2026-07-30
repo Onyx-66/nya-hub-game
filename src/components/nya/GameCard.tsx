@@ -27,6 +27,8 @@ const GAME_SLUG_ICONS: Record<string, IconComp> = {
   "block-blast": LayoutGrid,
   "candy-crush": Gem,
   coloring: Palette,
+  "multi-color-fill": Palette,
+  "paws-merge": PawPrint,
 };
 
 /** Pastel gradient per category */

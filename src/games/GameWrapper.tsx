@@ -20,6 +20,10 @@ import NyaCrushGameWrapper from "@/games/candy-crush";
 import { NYA_CRUSH_META } from "@/games/candy-crush/game.config";
 import ColoringGameWrapper from "@/games/coloring";
 import { COLORING_META } from "@/games/coloring/game.config";
+import MultiColorFillGameWrapper from "@/games/multi-color-fill";
+import { MULTI_COLOR_FILL_META } from "@/games/multi-color-fill/game.config";
+import PawsMergeGameWrapper from "@/games/paws-merge";
+import { PAWS_MERGE_META } from "@/games/paws-merge/game.config";
 
 interface GameEntry {
   name: string;
@@ -35,6 +39,8 @@ const GAME_ENTRIES: Record<string, GameEntry> = {
   "quiz-sword": { name: QUIZ_SWORD_META.displayName ?? "Sword of Knowledge", Component: QuizSwordGameWrapper },
   "candy-crush": { name: NYA_CRUSH_META.displayName ?? "Nya Crush", Component: NyaCrushGameWrapper },
   "coloring": { name: COLORING_META.displayName ?? "Cat Coloring Book", Component: ColoringGameWrapper },
+  "multi-color-fill": { name: MULTI_COLOR_FILL_META.displayName ?? "Multi-Color Fill", Component: MultiColorFillGameWrapper },
+  "paws-merge": { name: PAWS_MERGE_META.displayName ?? "Paws Merge", Component: PawsMergeGameWrapper },
 };
 
 function GameLoadingScreen({ name }: { name: string }) {
@@ -69,8 +75,8 @@ export default function GameWrapper() {
   if (entry) {
     const { Component, name } = entry;
     return (
-      <NyaLayout title={name} hideNav={slug === "snake"} compact={slug === "snake"}>
-        <div className={`relative ${slug === "snake" ? "h-full" : "min-h-[60vh]"}`}>
+      <NyaLayout title={name} hideNav={["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "")} compact={["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "")}>
+        <div className={`relative ${["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "") ? "h-full" : "min-h-[60vh]"}`}>
           <Component />
           <AnimatePresence>
             {loading && (

@@ -137,6 +137,30 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
   t("Social Butterfly", "Visit Friends today", "misc", "easy", "friendsVisited", 1, "add", 10, 15, undefined, "Users", "text-pink-400"),
   t("Self Care", "Visit your Profile today", "misc", "easy", "profileVisited", 1, "add", 10, 15, undefined, "User", "text-blue-400"),
   t("Competitive", "Check the Rankings today", "misc", "easy", "rankingsVisited", 1, "add", 10, 15, undefined, "Trophy", "text-amber-400"),
+
+  // ── Multi-Color Fill (10) ──
+  t("Fill 2 Levels", "Complete 2 Multi-Color Fill levels", "plays", "easy", "mcf-levels", 2, "add", 15, 25, undefined, "Palette", "text-violet-400"),
+  t("Fill 3 Levels", "Complete 3 Multi-Color Fill levels", "plays", "medium", "mcf-levels", 3, "add", 25, 40, 1, "Palette", "text-violet-400"),
+  t("Fill 5 Levels", "Complete 5 Multi-Color Fill levels", "plays", "hard", "mcf-levels", 5, "add", 40, 60, 2, "Palette", "text-violet-400"),
+  t("Color Perfect", "3-star a Multi-Color Fill level", "stars", "medium", "mcf-three-star", 1, "add", 20, 35, 1, "Star", "text-yellow-400"),
+  t("No Hints Fill", "Complete a Multi-Color Fill level without hints", "misc", "medium", "mcf-no-hints", 1, "add", 20, 30, undefined, "Lightbulb", "text-cyan-400"),
+  t("Quick Fill", "Complete a level in under 30s", "misc", "hard", "mcf-speed-30", 1, "add", 25, 40, 1, "Zap", "text-yellow-400"),
+  t("Speed Fill", "Complete a level in under 15s", "misc", "hard", "mcf-speed-15", 1, "add", 40, 60, 2, "Zap", "text-amber-400"),
+  t("Rainbow Fill", "Complete a level with 5+ colors", "misc", "hard", "mcf-rainbow", 1, "add", 30, 50, 1, "Palette", "text-fuchsia-400"),
+  t("Fill Master", "Play Multi-Color Fill today", "plays", "easy", "plays:multi-color-fill", 1, "add", 15, 25, undefined, "Palette", "text-violet-400"),
+  t("Color Scorer", "Score 500+ in Multi-Color Fill", "score", "medium", "highScore:multi-color-fill", 500, "set", 25, 50, 1, "Target", "text-amber-400"),
+
+  // ── Paws Merge (10) ──
+  t("Paw Drop", "Play Paws Merge today", "plays", "easy", "plays:paws-merge", 1, "add", 15, 25, undefined, "PawPrint", "text-orange-400"),
+  t("Merge 5 Paws", "Reach tier 5 in Paws Merge", "score", "medium", "pm-tier", 5, "set", 20, 35, 1, "PawPrint", "text-orange-400"),
+  t("Merge 8 Paws", "Reach tier 8 in Paws Merge", "score", "hard", "pm-tier", 8, "set", 40, 50, 2, "PawPrint", "text-red-400"),
+  t("Paw Score 500", "Score 500 in Paws Merge", "score", "easy", "pm-score", 500, "set", 15, 30, 1, "Target", "text-cyan-400"),
+  t("Paw Score 2000", "Score 2,000 in Paws Merge", "score", "medium", "pm-score", 2000, "set", 30, 50, 1, "Target", "text-cyan-400"),
+  t("Paw Score 5000", "Score 5,000 in Paws Merge", "score", "hard", "pm-score", 5000, "set", 50, 80, 2, "Target", "text-amber-400"),
+  t("Duster Time", "Use the duster once in Paws Merge", "misc", "easy", "pm-duster", 1, "add", 15, 20, undefined, "Sparkles", "text-cyan-400"),
+  t("Chain Merge", "Get a 5+ merge chain in Paws Merge", "misc", "hard", "pm-chain-merge", 5, "add", 40, 60, 2, "Flame", "text-orange-400"),
+  t("Paw High Scorer", "Score 1,000+ in Paws Merge", "score", "medium", "highScore:paws-merge", 1000, "set", 25, 50, 1, "TrendingUp", "text-green-400"),
+  t("Paw Collector", "Score 3,000+ in Paws Merge", "score", "hard", "highScore:paws-merge", 3000, "set", 40, 80, 2, "TrendingUp", "text-green-400"),
 ];
 
 // Lookup map

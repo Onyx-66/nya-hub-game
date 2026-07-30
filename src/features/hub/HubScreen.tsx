@@ -13,6 +13,8 @@ import { SNAKE_GAME_META } from "@/games/snake/game.config";
 import { BLOCK_BLAST_META } from "@/games/block-blast/game.config";
 import { NYA_CRUSH_META } from "@/games/candy-crush/game.config";
 import { COLORING_META } from "@/games/coloring/game.config";
+import { MULTI_COLOR_FILL_META } from "@/games/multi-color-fill/game.config";
+import { PAWS_MERGE_META } from "@/games/paws-merge/game.config";
 import DailyBonus from "@/components/nya/DailyBonus";
 import HubChallengeBanner from "@/components/nya/HubChallengeBanner";
 import OnboardingTutorial from "@/components/nya/OnboardingTutorial";
@@ -90,6 +92,8 @@ const games: GameMeta[] = [
   BLOCK_BLAST_META,
   NYA_CRUSH_META,
   COLORING_META,
+  MULTI_COLOR_FILL_META,
+  PAWS_MERGE_META,
 ];
 
 export default function HubScreen() {
@@ -113,6 +117,8 @@ export default function HubScreen() {
       "water-sort": 150,
       meowdoku: 120,
       coloring: 90,
+      "multi-color-fill": 110,
+      "paws-merge": 160,
     };
     const combined: Record<string, number> = {};
     for (const g of games) {

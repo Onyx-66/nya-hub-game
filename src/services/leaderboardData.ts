@@ -159,3 +159,5 @@ export const QUIZ_SWORD_LEADERBOARD: RankEntry[] = generateLeaderboard("quiz-swo
 export const BLOCK_BLAST_LEADERBOARD: RankEntry[] = generateLeaderboard("block-blast", 500, 30000);
 export const NYA_CRUSH_LEADERBOARD: RankEntry[] = generateLeaderboard("candy-crush", 1000, 50000);
 export const COLORING_LEADERBOARD: RankEntry[] = generateLeaderboard("coloring", 25, 500);
+export const MULTI_COLOR_FILL_LEADERBOARD: RankEntry[] = generateLeaderboard("multi-color-fill", 100, 5000);
+export const PAWS_MERGE_LEADERBOARD: RankEntry[] = generateLeaderboard("paws-merge", 200, 20000);

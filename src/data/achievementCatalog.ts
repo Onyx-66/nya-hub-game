@@ -48,6 +48,8 @@ const GAMES = [
   { slug: "quiz-sword", name: "Sword of Knowledge" },
   { slug: "candy-crush", name: "Nya Crush" },
   { slug: "coloring", name: "Cat Coloring" },
+  { slug: "multi-color-fill", name: "Multi-Color Fill" },
+  { slug: "paws-merge", name: "Paws Merge" },
 ];
 
 // Compact creator
@@ -556,6 +558,126 @@ function genMisc(): AchievementDef[] {
 }
 
 // =============================================
+// Multi-Color Fill (50)
+// =============================================
+function genMultiColorFill(): AchievementDef[] {
+  return [
+    a("mcf-first", "First Stroke", "Complete your first level", "gameplay", "Palette", "text-violet-400", "mcf-level", 1, 25, 0),
+    a("mcf-level-5", "Color Apprentice", "Reach level 5", "gameplay", "Palette", "text-violet-400", "mcf-level", 5, 50, 0),
+    a("mcf-level-10", "Color Enthusiast", "Reach level 10", "mastery", "Palette", "text-violet-400", "mcf-level", 10, 100, 0),
+    a("mcf-level-15", "Color Master", "Reach level 15", "mastery", "Palette", "text-purple-400", "mcf-level", 15, 200, 0),
+    a("mcf-level-30", "Color Grandmaster", "Reach level 30", "mastery", "Crown", "text-amber-400", "mcf-level", 30, 500, 3),
+    a("mcf-three-star-5", "Perfectionist", "3-star 5 levels", "mastery", "Star", "text-yellow-400", "mcf-three-star", 5, 200, 0),
+    a("mcf-three-star-10", "Perfect Artist", "3-star 10 levels", "mastery", "Star", "text-fuchsia-400", "mcf-three-star", 10, 400, 0),
+    a("mcf-three-star-20", "Perfect Artist+", "3-star 20 levels", "mastery", "Trophy", "text-fuchsia-400", "mcf-three-star", 20, 1000, 5),
+    a("mcf-no-hints-5", "Independent", "Complete 5 levels without hints", "mastery", "Lightbulb", "text-cyan-400", "mcf-no-hints", 5, 100, 0),
+    a("mcf-no-hints-10", "No Help Needed", "Complete 10 levels without hints", "mastery", "Lightbulb", "text-cyan-400", "mcf-no-hints", 10, 200, 0),
+    a("mcf-no-hints-20", "Path Master", "Complete 20 levels without hints", "mastery", "Lightbulb", "text-blue-400", "mcf-no-hints", 20, 500, 3),
+    a("mcf-speed-30", "Quick Draw", "Complete a level in under 30 seconds", "mastery", "Zap", "text-yellow-400", "mcf-speed-30", 1, 150, 0),
+    a("mcf-speed-15", "Lightning Artist", "Complete a level in under 15 seconds", "mastery", "Zap", "text-amber-400", "mcf-speed-15", 1, 500, 3),
+    a("mcf-rainbow", "Rainbow", "Complete a level with 5+ colors", "mastery", "Palette", "text-fuchsia-400", "mcf-rainbow", 1, 300, 0),
+    // Level milestones
+    ...tiers("gameplay", "Palette", "text-violet-400", "mcf-level", [
+      [2, "Double Stroke", "Complete 2 levels", 15, 30],
+      [3, "Triple Stroke", "Complete 3 levels", 20, 40],
+      [7, "Weekly Painter", "Complete 7 levels", 40, 80],
+      [12, "Dedicated Painter", "Complete 12 levels", 60, 120],
+      [20, "Color Veteran", "Complete 20 levels", 100, 200],
+      [25, "Color Expert", "Complete 25 levels", 150, 300],
+      [50, "Color Legend", "Complete 50 levels", 300, 600, 10],
+    ]),
+    // Play count
+    ...tiers("gameplay", "Gamepad2", "text-violet-400", "plays:multi-color-fill", [
+      [1, "First Try", "Play Multi-Color Fill once", 10, 20],
+      [5, "Casual", "Play 5 times", 20, 40],
+      [10, "Regular", "Play 10 times", 30, 60],
+      [25, "Enthusiast", "Play 25 times", 50, 100],
+      [50, "Devotee", "Play 50 times", 75, 150],
+      [100, "Addicted", "Play 100 times", 100, 250],
+    ]),
+    // Score milestones
+    ...tiers("mastery", "Target", "text-amber-400", "highScore:multi-color-fill", [
+      [500, "Scorer", "Score 500+", 25, 50],
+      [2000, "High Scorer", "Score 2,000+", 50, 100],
+      [5000, "Score Master", "Score 5,000+", 75, 150],
+      [10000, "Score Legend", "Score 10,000+", 100, 250, 3],
+    ]),
+    // Star milestones
+    ...tiers("mastery", "Star", "text-yellow-400", "stars:multi-color-fill", [
+      [1, "Star Player", "Earn 1 star", 20, 40],
+      [3, "Perfect Player", "Earn 3 stars", 50, 100],
+      [10, "Star Veteran", "Earn 10 stars", 75, 150],
+      [30, "Star Legend", "Earn 30 stars", 150, 300, 5],
+    ]),
+    // Special
+    a("mcf_all_levels", "Completionist", "Complete all 15 levels", "mastery", "Crown", "text-amber-400", "mcf-level", 15, 300, 5),
+    a("mcf_speedrun", "Speedrunner", "Complete 5 levels in under 30s each", "mastery", "Zap", "text-yellow-400", "mcf-speed-30", 5, 300, 0),
+  ];
+}
+
+// =============================================
+// Paws Merge (50)
+// =============================================
+function genPawsMerge(): AchievementDef[] {
+  return [
+    a("pm-first", "First Drop", "Play Paws Merge for the first time", "gameplay", "PawPrint", "text-orange-400", "plays:paws-merge", 1, 25, 0),
+    // Score milestones
+    ...tiers("gameplay", "PawPrint", "text-orange-400", "pm-score", [
+      [100, "Paw Starter", "Score 100", 10, 20],
+      [500, "Paw Collector", "Score 500", 50, 0],
+      [1000, "Paw Fan", "Score 1,000", 75, 0],
+      [2000, "Paw Enthusiast", "Score 2,000", 200, 0],
+      [5000, "Paw Pro", "Score 5,000", 300, 0],
+      [10000, "Paw Master", "Score 10,000", 1000, 0, 5],
+      [20000, "Paw Legend", "Score 20,000", 2000, 0, 10],
+    ]),
+    // Tier milestones
+    a("pm-tier-2", "Tiny Pink", "Reach tier 2", "gameplay", "PawPrint", "text-pink-400", "pm-max-tier", 2, 15, 0),
+    a("pm-tier-3", "Calico", "Reach tier 3", "gameplay", "PawPrint", "text-yellow-400", "pm-max-tier", 3, 20, 0),
+    a("pm-tier-4", "Golden Lemon", "Reach tier 4", "gameplay", "PawPrint", "text-amber-400", "pm-max-tier", 4, 30, 0),
+    a("pm-tier-5", "Peach Ginger", "Reach tier 5", "mastery", "PawPrint", "text-orange-400", "pm-max-tier", 5, 50, 0),
+    a("pm-tier-6", "Purple Dusk", "Reach tier 6", "mastery", "PawPrint", "text-purple-400", "pm-max-tier", 6, 100, 0),
+    a("pm-tier-7", "Cheetah Spot", "Reach tier 7", "mastery", "PawPrint", "text-amber-500", "pm-max-tier", 7, 200, 0),
+    a("pm-tier-8", "Red Panda Paw", "Reach tier 8", "mastery", "PawPrint", "text-red-400", "pm-max-tier", 8, 300, 0),
+    a("pm-tier-9", "Panther Paw", "Reach tier 9", "mastery", "PawPrint", "text-slate-400", "pm-max-tier", 9, 500, 0),
+    a("pm-tier-10", "Lion Paw", "Reach tier 10", "mastery", "PawPrint", "text-amber-600", "pm-max-tier", 10, 1000, 5),
+    a("pm-tier-11", "Mega Tiger Paw", "Reach tier 11", "mastery", "Crown", "text-orange-500", "pm-max-tier", 11, 2000, 10),
+    // Play count
+    ...tiers("gameplay", "Gamepad2", "text-violet-400", "plays:paws-merge", [
+      [1, "First Try", "Play Paws Merge once", 10, 20],
+      [5, "Casual", "Play 5 times", 20, 40],
+      [10, "Regular", "Play 10 times", 30, 60],
+      [25, "Enthusiast", "Play 25 times", 50, 100],
+      [50, "Devotee", "Play 50 times", 75, 150],
+      [100, "Addicted", "Play 100 times", 100, 250],
+    ]),
+    // High score
+    ...tiers("mastery", "Target", "text-amber-400", "highScore:paws-merge", [
+      [200, "Scorer", "Score 200+", 20, 40],
+      [1000, "High Scorer", "Score 1,000+", 50, 100],
+      [5000, "Score Master", "Score 5,000+", 100, 250],
+      [15000, "Score Legend", "Score 15,000+", 200, 500, 5],
+    ]),
+    // Duster achievements
+    ...tiers("mastery", "Sparkles", "text-cyan-400", "pm-duster", [
+      [1, "Cleaner", "Use the duster once", 15, 30],
+      [5, "Tidy Cat", "Use the duster 5 times", 30, 60],
+      [10, "Clean Sweep", "Use the duster 10 times", 100, 0],
+    ]),
+    // Chain merges
+    a("pm-chain-3", "Triple Threat", "Get a 3+ merge chain", "mastery", "Flame", "text-orange-400", "pm-chain-merge", 3, 150, 0),
+    a("pm-chain-5", "Chain Reaction", "Get a 5+ merge chain", "mastery", "Flame", "text-red-400", "pm-chain-merge", 5, 1000, 5),
+    a("pm-chain-10", "Chain Master", "Get a 10+ merge chain", "mastery", "Flame", "text-rose-500", "pm-chain-merge", 10, 2000, 10),
+    // Stars
+    ...tiers("mastery", "Star", "text-yellow-400", "stars:paws-merge", [
+      [1, "Star Player", "Earn 1 star", 20, 40],
+      [3, "Perfect Player", "Earn 3 stars", 50, 100],
+      [10, "Star Veteran", "Earn 10 stars", 75, 150],
+    ]),
+  ];
+}
+
+// =============================================
 // Export
 // =============================================
 export const ACHIEVEMENTS: AchievementDef[] = [
@@ -567,6 +689,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   ...genCollection(),
   ...genSpecial(),
   ...genMisc(),
+  ...genMultiColorFill(),
+  ...genPawsMerge(),
 ];
 
 export const ACHIEVEMENT_MAP: Record<string, AchievementDef> = Object.fromEntries(
