@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Sparkles } from "lucide-react";
 import { useAchievementStore } from "@/store/achievementStore";
+import { usePreferencesStore } from "@/store/preferencesStore";
 import { ACHIEVEMENT_MAP } from "@/data/achievementCatalog";
 import { ICON_MAP } from "@/features/achievements/iconMap";
 
@@ -13,6 +14,7 @@ import { ICON_MAP } from "@/features/achievements/iconMap";
 export default function AchievementNotification() {
   const notificationQueue = useAchievementStore((s) => s.notificationQueue);
   const dismiss = useAchievementStore((s) => s.dismissNotification);
+  const achievementsEnabled = usePreferencesStore((s) => s.notifications.achievements);
   const [visible, setVisible] = useState(false);
 
   const currentId = notificationQueue[0];
@@ -20,6 +22,11 @@ export default function AchievementNotification() {
 
   useEffect(() => {
     if (achievement) {
+      // If user disabled achievement notifications, auto-dismiss without showing
+      if (!achievementsEnabled) {
+        dismiss();
+        return;
+      }
       setVisible(true);
       const timer = setTimeout(() => {
         setVisible(false);
@@ -27,9 +34,9 @@ export default function AchievementNotification() {
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [achievement, dismiss]);
+  }, [achievement, dismiss, achievementsEnabled]);
 
-  if (!achievement) return null;
+  if (!achievement || !achievementsEnabled) return null;
 
   const Icon = achievement.isHidden ? Sparkles : (ICON_MAP[achievement.icon] ?? Sparkles);
 

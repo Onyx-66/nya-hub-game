@@ -18,6 +18,8 @@ import { PAWS_MERGE_META } from "@/games/paws-merge/game.config";
 import DailyBonus from "@/components/nya/DailyBonus";
 import HubChallengeBanner from "@/components/nya/HubChallengeBanner";
 import OnboardingTutorial from "@/components/nya/OnboardingTutorial";
+import ViewToggle from "@/components/nya/ViewToggle";
+import { usePreferencesStore } from "@/store/preferencesStore";
 import { useChallengeStore } from "@/store/challengeStore";
 import type { GameMeta } from "@/types";
 
@@ -101,6 +103,7 @@ export default function HubScreen() {
   const { user } = useAuthStore();
   const highScores = useGameStore((s) => s.highScores);
   const playCounts = useGameStore((s) => s.playCounts);
+  const gameViewMode = usePreferencesStore((s) => s.gameViewMode);
 
   const featuredGames = games.filter((g) => g.isFeatured && !g.isComingSoon);
 
@@ -176,15 +179,19 @@ export default function HubScreen() {
             <h3 className="font-heading font-bold text-lg text-foreground">
               All Games
             </h3>
-            <span className="text-xs text-muted-foreground">
-              {games.length} games
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">
+                {games.length} games
+              </span>
+              <ViewToggle />
+            </div>
           </div>
           <GameGrid
             games={games}
             highScores={highScores}
             badges={badges}
             onPlay={(g) => navigate(`/game/${g.slug}`)}
+            viewMode={gameViewMode}
           />
         </div>
       </div>

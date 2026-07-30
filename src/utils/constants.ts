@@ -4,13 +4,13 @@ export const APP_VERSION = "1.0.0";
 export const MAX_PSEUDONYM_LENGTH = 20;
 export const MIN_PSEUDONYM_LENGTH = 3;
 
-export const DAILY_BONUS_PAWS = 50;
-export const AD_REWARD_PAWS = 25;
+export const DAILY_BONUS_PAWS = 30;
+export const AD_REWARD_PAWS = 15;
 
-export const PAWS_PER_GAME_MAX = 100;
-export const PAWS_PER_SCORE_DIVISOR = 50;
+export const PAWS_PER_GAME_MAX = 35;
+export const PAWS_PER_SCORE_DIVISOR = 150;
 
-export const HIGH_SCORE_BONUS_PAWS = 25;
+export const HIGH_SCORE_BONUS_PAWS = 10;
 export const HIGH_SCORE_BONUS_GEMS = 1;
 
 export const STORAGE_PREFIX = "nya-";

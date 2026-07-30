@@ -16,6 +16,9 @@ import {
   Mail,
   ChevronRight,
   RotateCcw,
+  Bell,
+  Trophy,
+  Coins,
 } from "lucide-react";
 import NyaLayout from "@/components/nya/NyaLayout";
 import NyaButton from "@/components/nya/NyaButton";
@@ -25,6 +28,7 @@ import { audioService } from "@/services/audioService";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/useGameStore";
 import { useOnboardingStore } from "@/store/onboardingStore";
+import { usePreferencesStore } from "@/store/preferencesStore";
 import { useToast } from "@/components/ui/use-toast";
 
 const AVATARS = ["🐱", "😺", "😸", "😻", "😼", "🐈‍⬛", "👑", "🚀"];
@@ -95,6 +99,8 @@ export default function SettingsScreen() {
   const { user, updateProfile } = useAuthStore();
   const clearGameData = useGameStore((s) => s.clearGameData);
   const resetOnboarding = useOnboardingStore((s) => s.reset);
+  const notifSettings = usePreferencesStore((s) => s.notifications);
+  const toggleNotif = usePreferencesStore((s) => s.toggleNotification);
   const { toast } = useToast();
 
   const [sfxOn, setSfxOn] = useState(audioService.isSFXEnabled());
@@ -253,6 +259,40 @@ export default function SettingsScreen() {
               <Toggle
                 checked={prefs.hapticsEnabled}
                 onChange={(v) => setPref("hapticsEnabled", v)}
+              />
+            }
+          />
+        </Section>
+
+        {/* ── NOTIFICATIONS ── */}
+        <Section title="Notifications">
+          <Row
+            icon={Trophy}
+            label="Achievement Unlocks"
+            right={
+              <Toggle
+                checked={notifSettings.achievements}
+                onChange={(v) => toggleNotif("achievements")}
+              />
+            }
+          />
+          <Row
+            icon={Star}
+            label="Daily Challenges"
+            right={
+              <Toggle
+                checked={notifSettings.challenges}
+                onChange={(v) => toggleNotif("challenges")}
+              />
+            }
+          />
+          <Row
+            icon={Coins}
+            label="Currency & Rewards"
+            right={
+              <Toggle
+                checked={notifSettings.economy}
+                onChange={(v) => toggleNotif("economy")}
               />
             }
           />
