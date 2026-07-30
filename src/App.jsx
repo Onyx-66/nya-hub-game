@@ -22,6 +22,7 @@ import LoginModal from '@/features/landing/LoginModal';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
 import MobileGamingGuide from '@/pages/MobileGamingGuide';
+import PuzzleGamesGuide from '@/pages/PuzzleGamesGuide';
 import ErrorBoundary from '@/components/nya/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
@@ -71,6 +72,7 @@ const AuthenticatedApp = () => {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/mobile-gaming-guide" element={<MobileGamingGuide />} />
+          <Route path="/puzzle-games-guide" element={<PuzzleGamesGuide />} />
           <Route path="/hub" element={<RequireAuth><HubScreen /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><ProfileScreen /></RequireAuth>} />
           <Route path="/store" element={<RequireAuth><StoreScreen /></RequireAuth>} />

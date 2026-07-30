@@ -187,6 +187,8 @@ export default function LandingPage() {
           <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">Contact</Link>
           <span className="text-border">·</span>
           <Link to="/mobile-gaming-guide" className="text-muted-foreground hover:text-primary transition-colors">Gaming Guide</Link>
+          <span className="text-border">·</span>
+          <Link to="/puzzle-games-guide" className="text-muted-foreground hover:text-primary transition-colors">Puzzle Games</Link>
         </div>
         <p className="text-xs text-muted-foreground">v1.0.0</p>
       </div>
