@@ -238,7 +238,10 @@ export class PawsMergeEngine {
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const threshold = (a.radius + b.radius) * 0.8;
+        // Threshold must be >= collision distance (a.radius + b.radius)
+        // because the collision resolver pushes paws to exactly that distance.
+        // A small tolerance ensures merges trigger when paws are touching.
+        const threshold = a.radius + b.radius + 2;
 
         if (dist < threshold) {
           if (!mergedSet.has(a.id) && !mergedSet.has(b.id)) {
