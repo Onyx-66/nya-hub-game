@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import NyaLayout from "@/components/nya/NyaLayout";
 import GameGrid from "@/components/nya/GameGrid";
 import FeaturedBanner from "@/components/nya/FeaturedBanner";
+import { audioService } from "@/services/audioService";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/useGameStore";
 import { SNAKE_GAME_META } from "@/games/snake/game.config";
@@ -91,6 +93,11 @@ export default function HubScreen() {
   const highScores = useGameStore((s) => s.highScores);
 
   const featuredGames = games.filter((g) => g.isFeatured && !g.isComingSoon);
+
+  // Play hub music on mount
+  useEffect(() => {
+    audioService.playMusic("hub-chill", true);
+  }, []);
 
   return (
     <NyaLayout showBack={false} title="Nya Hub">

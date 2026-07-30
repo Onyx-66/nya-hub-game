@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Play, ShoppingBag, User, Users, Settings, PawPrint } from "lucide-react";
+import { Play, ShoppingBag, User, Users, Settings, PawPrint, Volume2, VolumeX } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { audioService } from "@/services/audioService";
 import LoginModal from "./LoginModal";
 
 interface NavCard {
@@ -58,6 +59,19 @@ export default function LandingPage() {
     navigate(loginTarget);
   };
 
+  // Play landing music on mount
+  useEffect(() => {
+    audioService.playMusic("landing-mystical", true);
+    return () => audioService.stopMusic(true);
+  }, []);
+
+  const [muted, setMuted] = useState(!audioService.isSFXEnabled());
+  const toggleMute = () => {
+    const sfxOn = audioService.toggleSFX();
+    const musicOn = audioService.toggleMusic();
+    setMuted(!sfxOn);
+  };
+
   const cards = useMemo(
     () =>
       NAV_CARDS.map((card, i) => ({
@@ -90,6 +104,19 @@ export default function LandingPage() {
           </motion.div>
         ))}
       </div>
+
+      {/* Mute toggle */}
+      <button
+        onClick={toggleMute}
+        className="absolute top-4 right-4 z-20 w-11 h-11 rounded-2xl bg-card/60 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-card transition-colors"
+        aria-label={muted ? "Unmute" : "Mute"}
+      >
+        {muted ? (
+          <VolumeX className="w-5 h-5 text-muted-foreground" />
+        ) : (
+          <Volume2 className="w-5 h-5 text-primary" />
+        )}
+      </button>
 
       {/* Top: Logo */}
       <motion.div

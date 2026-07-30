@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useEconomyStore } from "@/store/economyStore";
 import { useGameStore } from "@/store/useGameStore";
 import { useAuthStore } from "@/store/authStore";
+import { audioService } from "@/services/audioService";
 import {
   PAWS_PER_GAME_MAX,
   PAWS_PER_SCORE_DIVISOR,
@@ -34,6 +35,7 @@ export function useGameEconomy(gameSlug: string) {
 
   const onGameStart = useCallback(() => {
     startSession(gameSlug);
+    audioService.playSFX("game-start");
   }, [gameSlug, startSession]);
 
   const onGameEnd = useCallback(
@@ -41,12 +43,14 @@ export function useGameEconomy(gameSlug: string) {
       // Calculate paws earned: 1 per divisor points, clamped [1, max].
       const pawsEarned = Math.max(1, Math.min(PAWS_PER_GAME_MAX, Math.floor(score / PAWS_PER_SCORE_DIVISOR)));
       addPaws(pawsEarned, `${gameSlug} game reward`);
+      audioService.playSFX("paw-earn");
 
       // High score bonus (only when beating a non-zero previous best).
       const previousBest = getHighScore(gameSlug);
       if (score > previousBest && previousBest > 0) {
         addPaws(HIGH_SCORE_BONUS_PAWS, "New high score bonus");
         addGems(HIGH_SCORE_BONUS_GEMS);
+        audioService.playSFX("gem-earn");
       }
 
       // End session in game store (records high score + gamesPlayed).

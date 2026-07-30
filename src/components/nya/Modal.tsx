@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
+import { audioService } from "@/services/audioService";
 
 type ModalSize = "sm" | "md" | "lg" | "full";
 
@@ -26,15 +27,20 @@ const sizeClasses: Record<ModalSize, string> = {
  * Closes on Escape key, backdrop click, or close button.
  */
 export default function Modal({ open, onClose, children, title, size = "md" }: ModalProps) {
-  // Escape key to close
+  // Play open sound + Escape key to close
   useEffect(() => {
-    if (!open) return;
+    if (open) audioService.playSFX("modal-open");
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [open, onClose]);
+  }, [open]);
+
+  const handleClose = useCallback(() => {
+    audioService.playSFX("modal-close");
+    onClose();
+  }, [onClose]);
 
   return (
     <AnimatePresence>
@@ -44,7 +50,7 @@ export default function Modal({ open, onClose, children, title, size = "md" }: M
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
-          onClick={onClose}
+          onClick={handleClose}
         >
           <motion.div
             initial={{ opacity: 0, y: 60, scale: 0.96 }}
@@ -64,7 +70,7 @@ export default function Modal({ open, onClose, children, title, size = "md" }: M
             )}
 
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
               aria-label="Close"
             >

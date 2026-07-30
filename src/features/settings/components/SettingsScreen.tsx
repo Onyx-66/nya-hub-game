@@ -15,11 +15,13 @@ import {
   Share2,
   Mail,
   ChevronRight,
+  RotateCcw,
 } from "lucide-react";
 import NyaLayout from "@/components/nya/NyaLayout";
 import NyaButton from "@/components/nya/NyaButton";
 import Modal from "@/components/nya/Modal";
 import Toggle from "@/components/ui/Toggle";
+import { audioService } from "@/services/audioService";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/useGameStore";
 import { useToast } from "@/components/ui/use-toast";
@@ -93,7 +95,10 @@ export default function SettingsScreen() {
   const clearGameData = useGameStore((s) => s.clearGameData);
   const { toast } = useToast();
 
-  const [musicOn, setMusicOn] = useState(true);
+  const [sfxOn, setSfxOn] = useState(audioService.isSFXEnabled());
+  const [musicOn, setMusicOn] = useState(audioService.isMusicEnabled());
+  const [sfxVol, setSfxVol] = useState(audioService.getSFXVolume());
+  const [musicVol, setMusicVol] = useState(audioService.getMusicVolume());
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showNameModal, setShowNameModal] = useState(false);
   const [newName, setNewName] = useState("");
@@ -170,16 +175,75 @@ export default function SettingsScreen() {
             label="Sound Effects"
             right={
               <Toggle
-                checked={prefs.soundEnabled}
-                onChange={(v) => setPref("soundEnabled", v)}
+                checked={sfxOn}
+                onChange={(v) => {
+                  if (v !== sfxOn) {
+                    audioService.toggleSFX();
+                    setSfxOn(audioService.isSFXEnabled());
+                    audioService.playSFX("button-click");
+                  }
+                }}
               />
             }
           />
+          {sfxOn && (
+            <div className="px-4 py-3 flex items-center gap-3">
+              <Volume2 className="w-4 h-4 text-muted-foreground shrink-0" />
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(sfxVol * 100)}
+                onChange={(e) => {
+                  const v = Number(e.target.value) / 100;
+                  setSfxVol(v);
+                  audioService.setSFXVolume(v);
+                }}
+                className="flex-1 accent-primary h-2"
+              />
+              <span className="text-xs text-muted-foreground w-8 text-right">
+                {Math.round(sfxVol * 100)}%
+              </span>
+            </div>
+          )}
           <Row
             icon={Music}
             label="Background Music"
-            right={<Toggle checked={musicOn} onChange={setMusicOn} />}
+            right={
+              <Toggle
+                checked={musicOn}
+                onChange={(v) => {
+                  if (v !== musicOn) {
+                    audioService.toggleMusic();
+                    setMusicOn(audioService.isMusicEnabled());
+                    if (audioService.isMusicEnabled()) {
+                      audioService.playMusic("menu-soft", true);
+                    }
+                  }
+                }}
+              />
+            }
           />
+          {musicOn && (
+            <div className="px-4 py-3 flex items-center gap-3">
+              <Music className="w-4 h-4 text-muted-foreground shrink-0" />
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(musicVol * 100)}
+                onChange={(e) => {
+                  const v = Number(e.target.value) / 100;
+                  setMusicVol(v);
+                  audioService.setMusicVolume(v);
+                }}
+                className="flex-1 accent-primary h-2"
+              />
+              <span className="text-xs text-muted-foreground w-8 text-right">
+                {Math.round(musicVol * 100)}%
+              </span>
+            </div>
+          )}
           <Row
             icon={Vibrate}
             label="Vibration"

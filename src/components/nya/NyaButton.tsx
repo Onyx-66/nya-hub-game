@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
+import { audioService } from "@/services/audioService";
 
 type NyaButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "white";
 type NyaButtonSize = "sm" | "md" | "lg";
@@ -56,7 +57,11 @@ export default function NyaButton({
   return (
     <motion.button
       type={type}
-      onClick={onClick}
+      onClick={() => {
+        audioService.playSFX("button-click");
+        onClick?.();
+      }}
+      onHoverStart={() => audioService.playSFX("button-hover")}
       disabled={isDisabled}
       whileTap={{ scale: 0.94 }}
       whileHover={{ scale: isDisabled ? 1 : 1.03 }}
