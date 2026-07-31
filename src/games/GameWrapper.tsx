@@ -27,6 +27,8 @@ import PawsMergeGameWrapper from "@/games/paws-merge";
 import { PAWS_MERGE_META } from "@/games/paws-merge/game.config";
 import WhiskersRunnerGameWrapper from "@/games/whiskers-runner";
 import { WHISKERS_RUNNER_META } from "@/games/whiskers-runner/game.config";
+import SuperCatJumpGameWrapper from "@/games/super-cat-jump";
+import { SUPER_CAT_JUMP_META } from "@/games/super-cat-jump/game.config";
 
 interface GameEntry {
   name: string;
@@ -45,6 +47,7 @@ const GAME_ENTRIES: Record<string, GameEntry> = {
   "multi-color-fill": { name: MULTI_COLOR_FILL_META.displayName ?? "Multi-Color Fill", Component: MultiColorFillGameWrapper },
   "paws-merge": { name: PAWS_MERGE_META.displayName ?? "Paws Merge", Component: PawsMergeGameWrapper },
   "whiskers-runner": { name: WHISKERS_RUNNER_META.displayName ?? "Whiskers Runner", Component: WhiskersRunnerGameWrapper },
+  "super-cat-jump": { name: SUPER_CAT_JUMP_META.displayName ?? "Super Cat Jump", Component: SuperCatJumpGameWrapper },
 };
 
 function GameLoadingScreen({
@@ -90,10 +93,10 @@ export default function GameWrapper() {
       <NyaLayout
         title={name}
         titleIcon={GameIcon ? <GameIcon className="w-5 h-5 text-primary" /> : undefined}
-        hideNav={["snake", "multi-color-fill", "paws-merge", "whiskers-runner"].includes(slug ?? "")}
-        compact={["snake", "multi-color-fill", "paws-merge", "whiskers-runner"].includes(slug ?? "")}
+        hideNav={["snake", "multi-color-fill", "paws-merge", "whiskers-runner", "super-cat-jump"].includes(slug ?? "")}
+        compact={["snake", "multi-color-fill", "paws-merge", "whiskers-runner", "super-cat-jump"].includes(slug ?? "")}
       >
-        <div className={`relative ${["snake", "multi-color-fill", "paws-merge", "whiskers-runner"].includes(slug ?? "") ? "h-full" : "min-h-[60vh]"}`}>
+        <div className={`relative ${["snake", "multi-color-fill", "paws-merge", "whiskers-runner", "super-cat-jump"].includes(slug ?? "") ? "h-full" : "min-h-[60vh]"}`}>
           <Component />
           <AnimatePresence>
             {loading && (

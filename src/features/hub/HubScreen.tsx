@@ -16,6 +16,7 @@ import { COLORING_META } from "@/games/coloring/game.config";
 import { MULTI_COLOR_FILL_META } from "@/games/multi-color-fill/game.config";
 import { PAWS_MERGE_META } from "@/games/paws-merge/game.config";
 import { WHISKERS_RUNNER_META } from "@/games/whiskers-runner/game.config";
+import { SUPER_CAT_JUMP_META } from "@/games/super-cat-jump/game.config";
 import DailyBonus from "@/components/nya/DailyBonus";
 import HubChallengeBanner from "@/components/nya/HubChallengeBanner";
 import OnboardingTutorial from "@/components/nya/OnboardingTutorial";
@@ -98,6 +99,7 @@ const games: GameMeta[] = [
   MULTI_COLOR_FILL_META,
   PAWS_MERGE_META,
   WHISKERS_RUNNER_META,
+  SUPER_CAT_JUMP_META,
 ];
 
 export default function HubScreen() {
@@ -125,6 +127,7 @@ export default function HubScreen() {
       "multi-color-fill": 110,
       "paws-merge": 160,
       "whiskers-runner": 140,
+      "super-cat-jump": 135,
     };
     const combined: Record<string, number> = {};
     for (const g of games) {
