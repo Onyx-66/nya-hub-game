@@ -7,6 +7,7 @@ import {
   Gem,
   Palette,
   PawPrint,
+  Cat,
 } from "lucide-react";
 import type { ComponentType, CSSProperties } from "react";
 
@@ -30,6 +31,7 @@ export const GAME_SLUG_ICONS: Record<string, GameIconComp> = {
   coloring: Palette,
   "multi-color-fill": Palette,
   "paws-merge": PawPrint,
+  "whiskers-runner": Cat,
   "sword-of-knowledge": Sword,
   "drawing-coloring": Palette,
 };

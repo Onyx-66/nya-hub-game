@@ -25,6 +25,8 @@ import MultiColorFillGameWrapper from "@/games/multi-color-fill";
 import { MULTI_COLOR_FILL_META } from "@/games/multi-color-fill/game.config";
 import PawsMergeGameWrapper from "@/games/paws-merge";
 import { PAWS_MERGE_META } from "@/games/paws-merge/game.config";
+import WhiskersRunnerGameWrapper from "@/games/whiskers-runner";
+import { WHISKERS_RUNNER_META } from "@/games/whiskers-runner/game.config";
 
 interface GameEntry {
   name: string;
@@ -42,6 +44,7 @@ const GAME_ENTRIES: Record<string, GameEntry> = {
   "coloring": { name: COLORING_META.displayName ?? "Cat Coloring Book", Component: ColoringGameWrapper },
   "multi-color-fill": { name: MULTI_COLOR_FILL_META.displayName ?? "Multi-Color Fill", Component: MultiColorFillGameWrapper },
   "paws-merge": { name: PAWS_MERGE_META.displayName ?? "Paws Merge", Component: PawsMergeGameWrapper },
+  "whiskers-runner": { name: WHISKERS_RUNNER_META.displayName ?? "Whiskers Runner", Component: WhiskersRunnerGameWrapper },
 };
 
 function GameLoadingScreen({
@@ -87,10 +90,10 @@ export default function GameWrapper() {
       <NyaLayout
         title={name}
         titleIcon={GameIcon ? <GameIcon className="w-5 h-5 text-primary" /> : undefined}
-        hideNav={["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "")}
-        compact={["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "")}
+        hideNav={["snake", "multi-color-fill", "paws-merge", "whiskers-runner"].includes(slug ?? "")}
+        compact={["snake", "multi-color-fill", "paws-merge", "whiskers-runner"].includes(slug ?? "")}
       >
-        <div className={`relative ${["snake", "multi-color-fill", "paws-merge"].includes(slug ?? "") ? "h-full" : "min-h-[60vh]"}`}>
+        <div className={`relative ${["snake", "multi-color-fill", "paws-merge", "whiskers-runner"].includes(slug ?? "") ? "h-full" : "min-h-[60vh]"}`}>
           <Component />
           <AnimatePresence>
             {loading && (
